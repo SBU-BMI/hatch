@@ -61,7 +61,6 @@ public class JPEGTools {
     
     public static byte[] FindFirstEOI(byte[] ets) throws IOException {
         int c=0;
-//        Files.write((new File("dump.jpg")).toPath(), ets);
         while(c<ets.length) {
             c++;
             if (Byte.compare(ets[c-1],FF)==0) {

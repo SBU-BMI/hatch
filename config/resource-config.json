@@ -20,6 +20,9 @@
       "pattern":"\\Qorg/joda/time/tz/data/America/New_York\\E"
     }, 
     {
+      "pattern":"\\Qorg/joda/time/tz/data/Etc/UTC\\E"
+    }, 
+    {
       "pattern":"\\Qorg/joda/time/tz/data/ZoneInfoMap\\E"
     }
   ]},

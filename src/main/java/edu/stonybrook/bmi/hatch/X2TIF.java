@@ -32,15 +32,17 @@ import ome.units.quantity.Length;
 import ome.xml.model.enums.DimensionOrder;
 import ome.xml.model.enums.PixelType;
 import ome.xml.model.primitives.PositiveInteger;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 
 /**
  *
  * @author erich
  */
-public class X2TIF {
+public class X2TIF implements AutoCloseable {
     private FormatReader reader;
-    private String inputFile;
-    private String outputFile;
+    private final String inputFile;
+    private final String outputFile;
     private int tileSizeX;
     private int tileSizeY;
     private int height;
@@ -48,7 +50,6 @@ public class X2TIF {
     private int maximage;
     private Pyramid pyramid;
     private OMETiffWriter writer;
-    private boolean verbose = false;
     private final StopWatch time;
     private int depth;
     private Length ppx;
@@ -57,15 +58,19 @@ public class X2TIF {
     private TiffRational py;
     private int TileSize;
     private IMetadata meta;
-    public static String software = "hatch 2.1.0 by Wing-n-Beak";
+    private final HatchParameters params;
+    private final Model m;
     
-    public X2TIF() {
+    public X2TIF(HatchParameters params, String src, String dest) {
         time = new StopWatch();
-    }
-    
-    public void SetSrcDest(String src, String dest) {
         inputFile = src;
         outputFile = dest;
+        this.params = params;
+        if (params.meta) {
+            m = ModelFactory.createDefaultModel();
+        } else {
+            m = null;
+        }
     }
     
     public int MaxImage(FormatReader reader) {
@@ -79,7 +84,7 @@ public class X2TIF {
             }
             ii++;
         }
-        System.out.println("MAX IMAGE SIZE IS SERIES : "+maxseries);
+        if (params.verbose) System.out.println("MAX IMAGE SIZE IS SERIES : "+maxseries);
         return maxseries;
     }
     
@@ -130,7 +135,7 @@ public class X2TIF {
                 } else {
                     h = wholenumytiles * tileSizeY + (fractiony/2);
                 }
-                if (verbose) {
+                if (params.verbose) {
                     System.out.println("Pyramid : "+w+" "+ h +" "+((int) (1+ Math.ceil(w/tileSizeX)))+" "+((int) (1+ Math.ceil(h/tileSizeX))));
                 }
                 ((OMEPyramidStore) meta).setResolutionSizeX(new PositiveInteger(w), 0, j);
@@ -181,14 +186,16 @@ public class X2TIF {
             ppx = retrieve.getPixelsPhysicalSizeX(maximage);
             ppy = retrieve.getPixelsPhysicalSizeY(maximage);
             SetPPS();
-            if (verbose) {
+            if (params.verbose) {
                 System.out.println("Image Size   : "+width+"x"+height);
                 System.out.println("Tile size    : "+tileSizeX+"x"+tileSizeY);
                 System.out.println("Compression  : "+reader.metadata.get("Compression"));
             }
             try {
                 if (reader.metadata.get("Compression")==null) {
-                    System.out.println("NULL compression specified...trying JPEG...no promises...");
+                    if (params.verbose) {
+                        System.out.println("NULL compression specified...trying JPEG...no promises...");
+                    }
                 } else if (reader.metadata.get("Compression")!="JPEG") {
                     throw new Error("Hatch can only convert images that have JPEG compression.");
                 }
@@ -205,7 +212,7 @@ public class X2TIF {
             int tiless = (int) Math.ceil(Math.log(tileSizeX)/Math.log(2));
             depth = ss-tiless+2;
             TileSize = reader.getOptimalTileHeight() * reader.getOptimalTileWidth() * 24;
-            if (verbose) {
+            if (params.verbose) {
                 System.out.println("# of scales to be generated : "+depth);
             }
             SetupWriter();
@@ -282,7 +289,7 @@ public class X2TIF {
     }
         
     public void readWriteTiles() throws FormatException, IOException {
-        if (verbose) {
+        if (params.verbose) {
             System.out.println("transferring image data...");
         }
         reader.setSeries(maximage);
@@ -295,7 +302,7 @@ public class X2TIF {
         writer.setResolution(0);
         byte[] rawbuffer = new byte[TileSize+20];
         for (int y=0; y<nYTiles; y++) {
-            if (verbose) {
+            if (params.verbose) {
                 float perc = 100f*y/nYTiles;
                 System.out.println(perc+"%");
             }
@@ -316,20 +323,18 @@ public class X2TIF {
                     ifd.putIFDValue(IFD.PHOTOMETRIC_INTERPRETATION, PhotoInterp.RGB.getCode());
                 }
                 ifd.put(777, raw);
-               // Dump2File(raw,x,y);
                 writer.saveBytes(0, buf, ifd, tileX, tileY, effTileSizeX, effTileSizeY);
                 BufferedImage bi = ImageIO.read(new ByteArrayInputStream(raw));
-                //DumpBI2File(bi,x,y);
                 bi = bi.getSubimage(0, 0, effTileSizeX, effTileSizeY);
                 pyramid.put(bi, x, y);
             }
         }
-        if (verbose) {
+        if (params.verbose) {
             time.Cumulative();
             System.out.println("Generate image pyramid...");
         }
         for (int s=1;s<depth;s++) {
-            if (verbose) {
+            if (params.verbose) {
                 System.out.println("Level : "+s+" of "+depth);
             }
             System.out.println("Lump...");
@@ -343,7 +348,7 @@ public class X2TIF {
             System.out.println("Resolution S="+s+" "+pyramid.getWidth()+"x"+pyramid.getHeight());
             writer.setSeries(0);
             writer.setResolution(s);
-            if (verbose) {
+            if (params.verbose) {
                 System.out.println("Writing level "+s+"...");
             }
             for (int y=0; y<pyramid.gettilesY(); y++) {
@@ -372,21 +377,10 @@ public class X2TIF {
         }
     }
     
-    public void SetVerbose(boolean x) {
-        verbose = x;
-    }
-    
-    public void DisplayHelp() {
-        System.out.println(software);
-        System.out.println("usage: hatch <src> <dest>");
-        System.out.println("-v : verbose");
-    }
-    
-    public void Execute(String src, String dest) {
-        if (verbose) {
+    public void Execute() {
+        if (params.verbose) {
             System.out.println("initializing...");
         }
-        SetSrcDest(src,dest);
         initialize();
         try {
             readWriteTiles();
@@ -396,22 +390,9 @@ public class X2TIF {
         }
     }
 
-    public static void main(String[] args) {
-        loci.common.DebugTools.setRootLevel("WARN");
-        X2TIF v2t = new X2TIF();
-        if ((args.length<2)||args.length>3) {
-            v2t.DisplayHelp();
-        } else {
-            if (args.length==3) {
-                if (args[0].equals("-v")) {
-                    v2t.SetVerbose(true);
-                    v2t.Execute(args[1],args[2]);
-                } else {
-                    v2t.DisplayHelp();
-                }
-            } else {
-                v2t.Execute(args[0],args[1]);
-            }
-        }
+    @Override
+    public void close() throws Exception {
+        reader.close();
+        writer.close();
     }
 }

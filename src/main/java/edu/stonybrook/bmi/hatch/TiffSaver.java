@@ -1,6 +1,5 @@
 package edu.stonybrook.bmi.hatch;
 
-import static edu.stonybrook.bmi.hatch.X2TIF.software;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutputStream;
@@ -449,8 +448,7 @@ public class TiffSaver implements Closeable {
         defaultByteCount = strips[0].length;
       }
       writeIFDStrips(ifd, no, strips, nChannels, last, x, y, defaultByteCount);
-    }
-    finally {
+    } finally {
       if (in != null) {
         in.close();
       }
@@ -978,7 +976,7 @@ public class TiffSaver implements Closeable {
       ifd.putIFDValue(IFD.Y_RESOLUTION, 512);
     }*/
     if (ifd.get(IFD.SOFTWARE) == null) {
-      ifd.putIFDValue(IFD.SOFTWARE, software);
+      ifd.putIFDValue(IFD.SOFTWARE, Hatch.software);
     }
     if (ifd.get(IFD.ROWS_PER_STRIP) == null && ifd.get(IFD.TILE_WIDTH) == null && ifd.get(IFD.TILE_LENGTH) == null) {
       ifd.putIFDValue(IFD.ROWS_PER_STRIP, new long[] {1});
@@ -1004,8 +1002,7 @@ public class TiffSaver implements Closeable {
     }
 
     if (ifd.containsKey(IFD.STRIP_BYTE_COUNTS) || ifd.containsKey(IFD.TILE_BYTE_COUNTS)) {
-      long[] ifdByteCounts = isTiled ?
-        ifd.getIFDLongArray(IFD.TILE_BYTE_COUNTS) : ifd.getStripByteCounts();
+      long[] ifdByteCounts = isTiled ? ifd.getIFDLongArray(IFD.TILE_BYTE_COUNTS) : ifd.getStripByteCounts();
       for (long stripByteCount : ifdByteCounts) {
         byteCounts.add(stripByteCount);
       }

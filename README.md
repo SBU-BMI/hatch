@@ -1,6 +1,6 @@
 # Hatch
 
-This tool converts VSI image format to TIFF.
+This tool converts the largest image in a VSI, SVS, or TIF image into a new TIFF image with a freshly created image pyramid with each scaling 1/2 dimensions each scale.
 
 Features:
 1) Hatch transfers raw jpeg encodings from original image to new image to prevent any re-encoding image loss due to re-compression.

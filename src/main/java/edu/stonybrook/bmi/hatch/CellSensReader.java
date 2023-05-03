@@ -2503,6 +2503,11 @@ public class CellSensReader extends FormatReader {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
+    @Override
+    public byte[] getRawBytesMeta(int no, int row, int col) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
   // -- Helper class --
 
   class TileCoordinate {
@@ -2586,11 +2591,9 @@ public class CellSensReader extends FormatReader {
     public ArrayList<String> deviceIDs = new ArrayList<String>();
     public ArrayList<String> deviceManufacturers = new ArrayList<String>();
 
-    public Hashtable<String, Object> originalMetadata =
-      new Hashtable<String, Object>();
+    public Hashtable<String, Object> originalMetadata = new Hashtable<String, Object>();
 
-    public HashMap<String, Integer> dimensionOrdering =
-      new HashMap<String, Integer>();
+    public HashMap<String, Integer> dimensionOrdering = new HashMap<String, Integer>();
 
     public transient Double zStart;
     public transient Double zIncrement;

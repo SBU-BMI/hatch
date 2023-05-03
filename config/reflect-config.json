@@ -1,18 +1,53 @@
 [
+    {
+    "name": "sun.awt.image.BufImgSurfaceData",
+    "methods": [
+      {"name": "getSolidLoops", "parameterTypes": ["sun.java2d.loops.SurfaceType"]}
+    ],
+    "allDeclaredConstructors": true,
+    "allPublicConstructors": true,
+    "allDeclaredMethods": true,
+    "allPublicMethods": true
+  },
 {
-  "name":"[[I"
+  "name":"boolean",
+  "allDeclaredFields":true
 },
 {
-  "name":"[[J"
+  "name":"com.beust.jcommander.converters.BooleanConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
 },
 {
-  "name":"java.awt.image.AffineTransformOp"
+  "name":"com.beust.jcommander.converters.FileConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"java.awt.image.ConvolveOp"
+  "name":"com.beust.jcommander.converters.IntegerConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
 },
 {
-  "name":"java.awt.image.LookupOp"
+  "name":"com.beust.jcommander.validators.NoValidator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.beust.jcommander.validators.NoValueValidator",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"edu.stonybrook.bmi.hatch.HatchParameters",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"int",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.io.File",
+  "allDeclaredFields":true
 },
 {
   "name":"java.security.SecureRandomParameters"
@@ -34,9 +69,6 @@
 {
   "name":"loci.common.Log4jTools",
   "methods":[{"name":"setRootLevel","parameterTypes":["java.lang.String"] }]
-},
-{
-  "name":"[Lloci.formats.tiff.OnDemandLongArray;"
 },
 {
   "name":"loci.common.LogbackTools"
@@ -133,19 +165,11 @@
   "name":"ome.codecs.services.LuraWaveServiceImpl"
 },
 {
-  "name":"sun.java2d.marlin.DMarlinRenderingEngine",
+  "name":"sun.security.provider.NativePRNG",
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.DRBG",
-  "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
 },
 {
   "name":"sun.security.provider.SHA",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.SHA2$SHA256",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

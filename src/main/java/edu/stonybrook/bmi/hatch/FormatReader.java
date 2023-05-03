@@ -1821,6 +1821,7 @@ public abstract class FormatReader extends FormatHandler
    * Construct an {@link ome.xml.model.AffineTransform} corresponding to
    * the given angle.
    * @param theta the angle of rotation in radians
+     * @return 
    */
   protected AffineTransform getRotationTransform(double theta) {
     AffineTransform transform = new AffineTransform();
@@ -1838,6 +1839,7 @@ public abstract class FormatReader extends FormatHandler
     id.indexOf("\n") > 0;
   }
   
+  public abstract byte[] getRawBytesMeta(int no, int row, int col);
   public abstract byte[] getRawBytes(byte[] rawbuffer, int no, int row, int col);
   public abstract byte[] getRawBytes(IFD ifd, int no, int row, int col);
   public abstract byte[] getDecodedTile(byte[] rawbuffer, int no, int row, int col);
