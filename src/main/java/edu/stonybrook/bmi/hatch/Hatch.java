@@ -13,14 +13,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import org.apache.jena.rdf.model.Model;
 
 /**
  *
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 2.2.0 by Wing-n-Beak";
+    public static String software = "hatch 3.0.0 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     public static final String HELP = Hatch.software+"\n"+
         """
@@ -86,7 +85,6 @@ public class Hatch {
                 System.exit(0);
             } else if (params.src.exists()) {
                 if (params.src.isDirectory()) {
-                    System.out.println(params.src+" is directory");
                     if (!params.dest.exists()) {
                         params.dest.mkdir();
                     }
@@ -96,15 +94,11 @@ public class Hatch {
                         Traverse(params);
                     }
                 } else {
-                    System.out.println(params.src+" is not a directory");
                     if (params.dest.exists()) {
-                        System.out.println(params.dest+" does exist");
                         if (!params.dest.isDirectory()) {
-                            System.out.println(params.dest+" is not a directory");
-                            X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString());
-                            v2t.Execute();
-                            try {
-                                v2t.close();
+                            params.dest.delete();
+                            try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString())){
+                                v2t.Execute();
                             } catch (Exception ex) {
                                 Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
                             }
@@ -112,9 +106,11 @@ public class Hatch {
                             jc.usage();
                         }
                     } else {
-                        System.out.println(params.dest+" does not exist");
-                        X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString());
-                        v2t.Execute();
+                        try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString());) {
+                            v2t.Execute();
+                        } catch (Exception ex) {
+                            Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
             } else {
@@ -126,7 +122,7 @@ public class Hatch {
     }
 }
 
-class FileProcessor implements Callable<Model> {
+class FileProcessor implements Callable<String> {
     private final HatchParameters params;
     private final String src;
     private final String dest;
@@ -138,7 +134,7 @@ class FileProcessor implements Callable<Model> {
     }
     
     @Override
-    public Model call() {
+    public String call() {
         try (X2TIF v2t = new X2TIF(params, src, dest)) {
             v2t.Execute();
         } catch (Exception ex) {

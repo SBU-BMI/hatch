@@ -36,14 +36,9 @@ public class TiffReader extends BaseTiffReader {
   // -- Constants --
 
   /** Logger for this class. */
-  private static final Logger LOGGER =
-    LoggerFactory.getLogger(TiffReader.class);
-
-  public static final String[] TIFF_SUFFIXES =
-    {"tif", "tiff", "tf2", "tf8", "btf"};
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(TiffReader.class);
+  public static final String[] TIFF_SUFFIXES = {"tif", "tiff", "tf2", "tf8", "btf"};
   public static final String[] COMPANION_SUFFIXES = {"xml", "txt"};
-
   public static final int IMAGEJ_TAG = 50839;
 
   // -- Fields --

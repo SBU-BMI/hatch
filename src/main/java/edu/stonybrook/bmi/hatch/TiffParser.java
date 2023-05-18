@@ -77,13 +77,16 @@ public class TiffParser implements Closeable {
 
   // -- Constructors --
 
-  /** Constructs a new TIFF parser from the given file name. */
+  /** Constructs a new TIFF parser from the given file name.
+     * @param filename
+     * @throws java.io.IOException */
   public TiffParser(String filename) throws IOException {
     this(new RandomAccessInputStream(filename));
     canClose = true;
   }
 
-  /** Constructs a new TIFF parser from the given input source. */
+  /** Constructs a new TIFF parser from the given input source.
+     * @param in */
   public TiffParser(RandomAccessInputStream in) {
     this.in = in;
     doCaching = true;
@@ -255,10 +258,8 @@ public class TiffParser implements Closeable {
   @Deprecated
   public IFDList getIFDs() throws IOException {
     if (ifdList != null) return ifdList;
-
     long[] offsets = getIFDOffsets();
     IFDList ifds = new IFDList();
-
     for (long offset : offsets) {
       IFD ifd = getIFD(offset);
       if (ifd == null) continue;
@@ -281,7 +282,6 @@ public class TiffParser implements Closeable {
       }
     }
     if (doCaching) ifdList = ifds;
-
     return ifds;
   }
 
@@ -709,14 +709,12 @@ public class TiffParser implements Closeable {
     int pixel = ifd.getBytesPerSample()[0];
     int effectiveChannels = planarConfig == 2 ? 1 : samplesPerPixel;
 
-    if (ifd.get(IFD.STRIP_BYTE_COUNTS) instanceof OnDemandLongArray) {
-      OnDemandLongArray counts = (OnDemandLongArray) ifd.get(IFD.STRIP_BYTE_COUNTS);
+    if (ifd.get(IFD.STRIP_BYTE_COUNTS) instanceof OnDemandLongArray counts) {
       if (counts != null) {
         counts.setStream(in);
       }
     }
-    if (ifd.get(IFD.TILE_BYTE_COUNTS) instanceof OnDemandLongArray) {
-      OnDemandLongArray counts = (OnDemandLongArray) ifd.get(IFD.TILE_BYTE_COUNTS);
+    if (ifd.get(IFD.TILE_BYTE_COUNTS) instanceof OnDemandLongArray counts) {
       if (counts != null) {
         counts.setStream(in);
       }
@@ -741,8 +739,8 @@ public class TiffParser implements Closeable {
       stripByteCounts[countIndex] = stripByteCounts[countIndex - 1];
     }
 
-    long stripOffset = 0;
-    long nStrips = 0;
+    long stripOffset;
+    long nStrips;
 
     if (ifd.getOnDemandStripOffsets() != null) {
       OnDemandLongArray stripOffsets = ifd.getOnDemandStripOffsets();
@@ -1391,18 +1389,16 @@ public class TiffParser implements Closeable {
     long tileLength = ifd.getTileLength();
     int samplesPerPixel = ifd.getSamplesPerPixel();
     int planarConfig = ifd.getPlanarConfiguration();
-    loci.formats.tiff.TiffCompression compression = ifd.getCompression();
+    //loci.formats.tiff.TiffCompression compression = ifd.getCompression();
     long numTileCols = ifd.getTilesPerRow();
     int pixel = ifd.getBytesPerSample()[0];
     int effectiveChannels = planarConfig == 2 ? 1 : samplesPerPixel;
-    if (ifd.get(IFD.STRIP_BYTE_COUNTS) instanceof OnDemandLongArray) {
-      OnDemandLongArray counts = (OnDemandLongArray) ifd.get(IFD.STRIP_BYTE_COUNTS);
+    if (ifd.get(IFD.STRIP_BYTE_COUNTS) instanceof OnDemandLongArray counts) {
       if (counts != null) {
         counts.setStream(in);
       }
     }
-    if (ifd.get(IFD.TILE_BYTE_COUNTS) instanceof OnDemandLongArray) {
-      OnDemandLongArray counts = (OnDemandLongArray) ifd.get(IFD.TILE_BYTE_COUNTS);
+    if (ifd.get(IFD.TILE_BYTE_COUNTS) instanceof OnDemandLongArray counts) {
       if (counts != null) {
         counts.setStream(in);
       }
@@ -1439,37 +1435,28 @@ public class TiffParser implements Closeable {
     }
     int tileSize = (int) stripByteCounts[countIndex];
     if (jpegTable != null) {
-      tileSize += jpegTable.length - 2 + APP14.length;
+      tileSize += jpegTable.length - 4 + APP14.length;
     }
     byte[] tile = new byte[tileSize];
     LOGGER.debug("Reading tile Length {} Offset {}", tile.length, stripOffset);
-   // System.out.println("PHOTO INTEROP : "+photoInterp);
     if (jpegTable != null) {
         System.arraycopy(jpegTable, 0, tile, 0, jpegTable.length - 2);
         switch (photoInterp) {
             case Y_CB_CR:
-                System.arraycopy(APP14Y_CB_CR, 0, tile, jpegTable.length - 1, APP14.length);
+                System.arraycopy(APP14Y_CB_CR, 0, tile, jpegTable.length - 2, APP14.length);
                 break;
             case RGB:
-                System.arraycopy(APP14, 0, tile, jpegTable.length - 1, APP14.length);
+                System.arraycopy(APP14, 0, tile, jpegTable.length - 2, APP14.length);
                 break;
             default:
                 throw new Error("Can't handle PhotoInterp "+photoInterp);
         }
       in.seek(stripOffset + 2);
-      in.read(tile, jpegTable.length - 1 + APP14.length, tile.length - (jpegTable.length - 1 + APP14.length));
+      in.read(tile, jpegTable.length - 2 + APP14.length, tile.length - (jpegTable.length - 2 + APP14.length));
     } else {
       in.seek(stripOffset);
       in.read(tile);
     }
-    // reverse bits in each byte if FillOrder == 2
-    if (ifd.getIFDIntValue(IFD.FILL_ORDER) == 2 && compression.getCode() <= loci.formats.tiff.TiffCompression.GROUP_4_FAX.getCode()) {
-      for (int i=0; i<tile.length; i++) {
-        tile[i] = (byte) (Integer.reverse(tile[i]) >> 24);
-      }
-    }
-    codecOptions.maxBytes = (int) Math.max(size, tile.length);
-    codecOptions.ycbcr = ifd.getPhotometricInterpretation() == PhotoInterp.Y_CB_CR && ifd.getIFDIntValue(IFD.Y_CB_CR_SUB_SAMPLING) == 1 && ycbcrCorrection;
-    return JPEGTools.FindFirstEOI(tile);
+    return tile;
   }
 }

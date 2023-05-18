@@ -1,6 +1,7 @@
 package edu.stonybrook.bmi.hatch;
 
 import static edu.stonybrook.bmi.hatch.Pyramid.CompressionSize;
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
@@ -30,7 +31,6 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
  * @author erich
  */
 public class Pyramid {
-    private static int cores;
     private JPEGBuffer[][] tiles;
     private int tilesX;
     private int tilesY;
@@ -41,14 +41,17 @@ public class Pyramid {
     public static float DownScale = 0.5f;
     private int width;
     private int height;
+    private final HatchParameters params;
     
-    public Pyramid(int tilesX, int tilesY, int tileSizeX, int tileSizeY) {
+    public Pyramid(HatchParameters params, int tilesX, int tilesY, int tileSizeX, int tileSizeY, int width, int height) {
+        this.params = params;
         this.tilesX = tilesX;
         this.tilesY = tilesY;
         this.tileSizeX = tileSizeX;
         this.tileSizeY = tileSizeY;
+        this.height = height;
+        this.width = width;
         tiles = new JPEGBuffer[tilesX][tilesY];
-        cores = Runtime.getRuntime().availableProcessors();
     }
     
     public int gettilesX() {
@@ -78,16 +81,9 @@ public class Pyramid {
     }
     
     private void CalculateHeightandWidth() {
-        int w = 0;
-        int h = 0;
-        for (int a=0; a<tilesX; a++) {
-            w = w + tiles[a][0].GetBufferImage().getWidth();
-        }
-        for (int b=0; b<tilesY; b++) {
-            h = h + tiles[0][b].GetBufferImage().getHeight();
-        }
-        width = w;
-        height = h;
+        width = (int) Math.round(width*DownScale);
+        height = (int) Math.round(height*DownScale);
+        System.out.println("HW : "+width+" X "+height);
     }
     
     public int getWidth() {
@@ -173,18 +169,27 @@ public class Pyramid {
         tiles[x][y] = new JPEGBuffer(bi,CompressionSize);
     }
     
+    public void put(BufferedImage bi, int x, int y, float scale) {
+        AffineTransform at = new AffineTransform();
+        at.scale(DownScale,DownScale);
+        AffineTransformOp scaleOp =  new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+        BufferedImage target = new BufferedImage((int)(DownScale*bi.getWidth()),(int)(DownScale*bi.getHeight()),bi.getType());
+        scaleOp.filter(bi, target);
+        put(target,x,y);
+    }
+
     public void Shrink() {
-        ThreadPoolExecutor engine = new ThreadPoolExecutor(cores,cores,0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        ThreadPoolExecutor engine = new ThreadPoolExecutor(params.cores,params.cores,0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         engine.prestartAllCoreThreads();
         System.out.println("SHRINK : "+tilesX+" "+tilesY);
         JPEGBuffer c = tiles[tilesX-1][tilesY-1];
         if (c.GetBufferImage().getWidth()==1) {
             System.out.println("shrink clip x");
-           tilesX--;
+            tilesX--;
         }
         if (c.GetBufferImage().getHeight()==1) {
-           System.out.println("shrink clip y");
-           tilesY--;
+            System.out.println("shrink clip y");
+            tilesY--;
         }
         for (int a=0; a<tilesX; a++) {
             for (int b=0; b<tilesY; b++) {
@@ -193,22 +198,19 @@ public class Pyramid {
             }
         }
         engine.shutdown();
-        while ((engine.getQueue().size()+engine.getActiveCount())>0) {}
+        while (!engine.isTerminated()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         System.out.println("Shrink Process complete...");
         CalculateHeightandWidth();
     }
     
-    public void put(BufferedImage bi, int x, int y, float scale) {
-        AffineTransform at = new AffineTransform();
-        at.scale(DownScale,DownScale);
-        AffineTransformOp scaleOp =  new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        BufferedImage target = new BufferedImage(bi.getWidth()/2,bi.getHeight()/2,bi.getType());
-        scaleOp.filter(bi, target);
-        put(target,x,y);
-    }
-    
     public void Lump() {
-        ThreadPoolExecutor engine = new ThreadPoolExecutor(cores,cores,0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
+        ThreadPoolExecutor engine = new ThreadPoolExecutor(params.cores,params.cores,0L,TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
         engine.prestartAllCoreThreads();
         xscale++;
         int neotilesX = (int) Math.ceil(tilesX/2f);
@@ -221,7 +223,13 @@ public class Pyramid {
             }
         }
         engine.shutdown();
-        while ((engine.getQueue().size()+engine.getActiveCount())>0) {}
+        while (!engine.isTerminated()) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         System.out.println("Merge Process complete...");
         tiles = neotiles;
         tilesX = neotilesX;
@@ -246,7 +254,7 @@ class SmushProcessor implements Callable<BufferedImage> {
         AffineTransform at = new AffineTransform();
         at.scale(Pyramid.DownScale,Pyramid.DownScale);
         AffineTransformOp scaleOp =  new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-        BufferedImage target = new BufferedImage(bi.getWidth()/2,bi.getHeight()/2,bi.getType());
+        BufferedImage target = new BufferedImage((int)(Pyramid.DownScale*bi.getWidth()),(int)(Pyramid.DownScale*bi.getHeight()),bi.getType());
         scaleOp.filter(bi, target);
         pyramid.put(target,a,b);
         return null;
@@ -266,18 +274,20 @@ class MergeProcessor implements Callable<JPEGBuffer> {
         this.b = b;
     }
     
-    public BufferedImage Merge(BufferedImage nw, BufferedImage ne, BufferedImage sw, BufferedImage se) {
+    private BufferedImage Merge(BufferedImage nw, BufferedImage ne, BufferedImage sw, BufferedImage se) {
         BufferedImage bi = new BufferedImage(2*pyramid.gettileSizeX(),2*pyramid.gettileSizeY(),nw.getType());
         Graphics g = bi.getGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
         g.drawImage(nw, 0, 0, null);
         if (ne!=null) {
-            g.drawImage(ne, pyramid.gettileSizeX(), 0, null);
+            g.drawImage(ne, nw.getWidth(), 0, null);
         }
         if (sw!=null) {
-            g.drawImage(sw, 0, pyramid.gettileSizeY(), null);
+            g.drawImage(sw, 0, nw.getHeight(), null);
         }
         if (se!=null) {
-            g.drawImage(se, pyramid.gettileSizeX(), pyramid.gettileSizeY(), null);
+            g.drawImage(se, nw.getWidth(), nw.getHeight(), null);
         }
         return bi;
     }
@@ -302,7 +312,7 @@ class MergeProcessor implements Callable<JPEGBuffer> {
             int ny = b/2;
             neotiles[nx][ny] = new JPEGBuffer(Merge(nw,ne,sw,se),CompressionSize);
         } else {
-            System.out.println("NW NULL!");
+            throw new Error("NW TILE NULL!!!");
         }
         return null;
     }

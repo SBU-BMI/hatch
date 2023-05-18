@@ -358,22 +358,16 @@ public class CellSensReader extends FormatReader {
   // -- Fields --
 
   private String[] usedFiles;
-  private HashMap<Integer, String> fileMap = new HashMap<Integer, String>();
-
+  private HashMap<Integer, String> fileMap = new HashMap<>();
   private TiffParser parser;
   private IFDList ifds;
-
   private ArrayList<Long[]> tileOffsets = new ArrayList<Long[]>();
-  private boolean jpeg = false;
-
   private ArrayList<Integer> rows = new ArrayList<Integer>();
   private ArrayList<Integer> cols = new ArrayList<Integer>();
   private ArrayList<Integer> compressionType = new ArrayList<Integer>();
   private ArrayList<Integer> tileX = new ArrayList<Integer>();
   private ArrayList<Integer> tileY = new ArrayList<Integer>();
-
-  private ArrayList<ArrayList<TileCoordinate>> tileMap =
-    new ArrayList<ArrayList<TileCoordinate>>();
+  private ArrayList<ArrayList<TileCoordinate>> tileMap = new ArrayList<ArrayList<TileCoordinate>>();
   private ArrayList<Integer> nDimensions = new ArrayList<Integer>();
   private boolean inDimensionProperties = false;
   private boolean foundChannelTag = false;
@@ -403,7 +397,6 @@ public class CellSensReader extends FormatReader {
 
   // -- CellSensReader API methods --
 
-
   public boolean failOnMissingETS() {
     MetadataOptions options = getMetadataOptions();
     if (options instanceof DynamicMetadataOptions) {
@@ -419,6 +412,11 @@ public class CellSensReader extends FormatReader {
   @Override
   public int fileGroupOption(String id) throws FormatException, IOException {
     return FormatTools.MUST_GROUP;
+  }
+  
+  @Override
+  public IFDList getIFDs() {
+      return ifds;
   }
 
   /* @see loci.formats.IFormatReader#isSingleFile(String) */
@@ -494,9 +492,7 @@ public class CellSensReader extends FormatReader {
    * @see loci.formats.IFormatReader#openBytes(int, byte[], int, int, int, int)
    */
   @Override
-  public byte[] openBytes(int no, byte[] buf, int x, int y, int w, int h)
-    throws FormatException, IOException
-  {
+  public byte[] openBytes(int no, byte[] buf, int x, int y, int w, int h) throws FormatException, IOException {
     FormatTools.checkPlaneParameters(this, no, buf.length, x, y, w, h);
 
     if (getCoreIndex() < core.size() - 1 && getCoreIndex() < rows.size()) {
@@ -508,8 +504,7 @@ public class CellSensReader extends FormatReader {
       Region intersection = null;
 
       byte[] tileBuf = null;
-      int pixel =
-        getRGBChannelCount() * FormatTools.getBytesPerPixel(getPixelType());
+      int pixel = getRGBChannelCount() * FormatTools.getBytesPerPixel(getPixelType());
       int outputRowLen = w * pixel;
 
       for (int row=0; row<tileRows; row++) {
@@ -557,8 +552,10 @@ public class CellSensReader extends FormatReader {
   }
 
   /* @see loci.formats.IFormatReader#reopenFile() */
+  @Override
   public void reopenFile() throws IOException {
     super.reopenFile();
+    //System.out.println("reopenFile --> "+currentId);
     parser = new TiffParser(currentId);
   }
 
@@ -575,7 +572,6 @@ public class CellSensReader extends FormatReader {
       usedFiles = null;
       fileMap.clear();
       tileOffsets.clear();
-      jpeg = false;
       rows.clear();
       cols.clear();
       compressionType.clear();
@@ -619,24 +615,18 @@ public class CellSensReader extends FormatReader {
         id = vsiFile.getAbsolutePath();
       }
     }
-
     parser = new TiffParser(id);
     ifds = parser.getMainIFDs();
-
     try (RandomAccessInputStream vsi = new RandomAccessInputStream(id)) {
       vsi.order(parser.getStream().isLittleEndian());
       vsi.seek(8);
       readTags(vsi, false, "");
     }
-
-    ArrayList<String> files = new ArrayList<String>();
+    ArrayList<String> files = new ArrayList<>();
     Location file = new Location(id).getAbsoluteFile();
-
     Location dir = file.getParentFile();
-
     String name = file.getName();
     name = name.substring(0, name.lastIndexOf("."));
-
     Location pixelsDir = new Location(dir, "_" + name + "_");
     String[] stackDirs = pixelsDir.list(true);
     if (stackDirs != null) {
@@ -656,7 +646,6 @@ public class CellSensReader extends FormatReader {
     }
     files.add(file.getAbsolutePath());
     usedFiles = files.toArray(new String[files.size()]);
-
     if (expectETS && files.size() == 1) {
       String message = "Missing expected .ets files in " + pixelsDir.getAbsolutePath();
       if (failOnMissingETS()) {
@@ -988,23 +977,27 @@ public class CellSensReader extends FormatReader {
     }
     Pyramid pyramid = pyramids.get(pyramidIndex);
     for (String dim : pyramid.dimensionOrdering.keySet()) {
-      int index = pyramid.dimensionOrdering.get(dim) + 2;
-      if (dim.equals("Z")) {
-        t.coordinate[index] = zct[0];
-      }
-      else if (dim.equals("C")) {
-        t.coordinate[index] = zct[1];
-      }
-      else if (dim.equals("T")) {
-        t.coordinate[index] = zct[2];
-      }
+        int index = pyramid.dimensionOrdering.get(dim) + 2;
+        switch (dim) {
+            case "Z":
+                t.coordinate[index] = zct[0];
+                break;
+            case "C":
+                t.coordinate[index] = zct[1];
+                break;
+            case "T":
+                t.coordinate[index] = zct[2];
+                break;
+            default:
+                break;
+        }
     }
     if (resIndex > 0) {
       t.coordinate[t.coordinate.length - 1] = resIndex;
     }
     ArrayList<TileCoordinate> map = tileMap.get(getCoreIndex());
     Integer index = map.indexOf(t);
-    if (index == null || index < 0) {
+    if (index < 0) {
       // fill in the tile with the stored background color
       // usually this is either black or white
       byte[] tile = new byte[getTileSize()];
@@ -1020,34 +1013,35 @@ public class CellSensReader extends FormatReader {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(bi, "jpg", baos );
       tile = baos.toByteArray();
-      System.out.println("BUFFER UNDER");
-      return tile;
+      throw new Error("BUFFER UNDER");
+      //return tile;
     }
     Long offset = tileOffsets.get(getCoreIndex())[index];
     byte[] buf = null;
     IFormatReader reader = null;
     try (RandomAccessInputStream ets = new RandomAccessInputStream(fileMap.get(getCoreIndex()))) {
-      ets.seek(offset);
-      CodecOptions options = new CodecOptions();
-      options.interleaved = isInterleaved();
-      options.littleEndian = isLittleEndian();
-      int tileSize = getTileSize();
-      if (tileSize == 0) {
-        tileSize = tileX.get(getCoreIndex()) * tileY.get(getCoreIndex()) * 10;
-      }
-      options.maxBytes = (int) (offset + tileSize);
-     // long end = index < tileOffsets.get(getCoreIndex()).length - 1 ? tileOffsets.get(getCoreIndex())[index + 1] : ets.length();
-      switch (compressionType.get(getCoreIndex())) {
-        case JPEG:
-            buf = JPEGTools.FindFirstEOI(ets,rawbuffer);
-          break;
-        default:
-            throw new Error("NOT JPEG!!");
-      }
+        ets.seek(offset);
+        CodecOptions options = new CodecOptions();
+        options.interleaved = isInterleaved();
+        options.littleEndian = isLittleEndian();
+        int tileSize = getTileSize();
+        if (tileSize == 0) {
+            tileSize = tileX.get(getCoreIndex()) * tileY.get(getCoreIndex()) * 10;
+        }
+        options.maxBytes = (int) (offset + tileSize);
+        // long end = index < tileOffsets.get(getCoreIndex()).length - 1 ? tileOffsets.get(getCoreIndex())[index + 1] : ets.length();
+        switch (compressionType.get(getCoreIndex())) {
+            case JPEG:
+                buf = JPEGTools.FindFirstEOI(ets,rawbuffer);
+                //X2TIF.Display(buf, 0, 0);
+                break;
+            default:
+                throw new Error("NOT JPEG!!");
+        }
     } finally {
-      if (reader != null) {
-        reader.close();
-      }
+        if (reader != null) {
+            reader.close();
+        }
     }   
     return buf; 
   }
@@ -1224,8 +1218,7 @@ public class CellSensReader extends FormatReader {
     int tileZ = etsFile.readInt();
     etsFile.skipBytes(4 * 17); // pixel info hints
 
-    byte[] color = new byte[
-      ms.sizeC * FormatTools.getBytesPerPixel(convertPixelType(pixelType))];
+    byte[] color = new byte[ms.sizeC * FormatTools.getBytesPerPixel(convertPixelType(pixelType))];
     etsFile.read(color);
 
     backgroundColor.put(getCoreIndex(), color);
@@ -1242,7 +1235,7 @@ public class CellSensReader extends FormatReader {
 
     tileOffsets.add(new Long[nUsedChunks]);
 
-    ArrayList<TileCoordinate> tmpTiles = new ArrayList<TileCoordinate>();
+    ArrayList<TileCoordinate> tmpTiles = new ArrayList<>();
 
     for (int chunk=0; chunk<nUsedChunks; chunk++) {
       etsFile.skipBytes(4);

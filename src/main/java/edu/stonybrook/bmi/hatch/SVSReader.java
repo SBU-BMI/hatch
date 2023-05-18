@@ -43,8 +43,7 @@ public class SVSReader extends BaseTiffReader {
   // -- Constants --
 
   /** Logger for this class. */
-  private static final Logger LOGGER =
-    LoggerFactory.getLogger(SVSReader.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SVSReader.class);
 
   /** TIFF image description prefix for Aperio SVS files. */
   private static final String APERIO_IMAGE_DESCRIPTION_PREFIX = "Aperio Image";

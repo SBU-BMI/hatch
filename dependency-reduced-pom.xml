@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.stonybrook.bmi</groupId>
   <artifactId>hatch</artifactId>
-  <version>2.2.0</version>
+  <version>3.0.0</version>
   <build>
     <resources>
       <resource>
@@ -29,11 +29,19 @@
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
             <version>3.3.0</version>
-            <configuration>
-              <rules>
-                <dependencyConvergence />
-              </rules>
-            </configuration>
+            <executions>
+              <execution>
+                <id>enforce</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <banDuplicatePomDependencyVersions />
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
           <plugin>
             <artifactId>maven-shade-plugin</artifactId>
@@ -108,7 +116,7 @@
                 <id>build-native</id>
                 <phase>package</phase>
                 <goals>
-                  <goal>build</goal>
+                  <goal>compile-no-fork</goal>
                 </goals>
               </execution>
             </executions>
@@ -116,7 +124,6 @@
               <imageName>hatch</imageName>
               <mainClass>edu.stonybrook.bmi.hatch.Hatch</mainClass>
               <debug>true</debug>
-              <skipNativeBuild>true</skipNativeBuild>
               <skipNativeTests>true</skipNativeTests>
               <verbose>true</verbose>
               <buildArgs>
@@ -124,7 +131,6 @@
                 <buildArg>-H:ConfigurationFileDirectories=config</buildArg>
                 <buildArg>--enable-url-protocols=https</buildArg>
                 <buildArg>-H:+AddAllCharsets</buildArg>
-                <buildArg>--static</buildArg>
               </buildArgs>
             </configuration>
           </plugin>
