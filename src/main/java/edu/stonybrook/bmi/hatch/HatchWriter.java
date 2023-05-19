@@ -1,8 +1,6 @@
 package edu.stonybrook.bmi.hatch;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import loci.common.RandomAccessOutputStream;
 import loci.formats.FormatException;
 import loci.formats.codec.CodecOptions;
@@ -29,16 +27,13 @@ public class HatchWriter implements AutoCloseable {
     public void nextImage() throws IOException {
         ros.seek(ros.length());
     }
-    
 
     @Override
-    public void close() throws Exception {
-        try {
-            try (ros; writer) {
-                System.out.println("closing Writer....");
-            }
+    public void close() {
+        try (ros; writer) {
+            System.out.println("closing Writer....");
         } catch (IOException ex) {
-            Logger.getLogger(HatchWriter.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("HatchWriter : "+ex);
         }
     }
 

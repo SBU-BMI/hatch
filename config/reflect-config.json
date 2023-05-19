@@ -1,14 +1,13 @@
 [
-    {
-    "name": "sun.awt.image.BufImgSurfaceData",
-    "methods": [
-      {"name": "getSolidLoops", "parameterTypes": ["sun.java2d.loops.SurfaceType"]}
-    ],
-    "allDeclaredConstructors": true,
-    "allPublicConstructors": true,
-    "allDeclaredMethods": true,
-    "allPublicMethods": true
-  },
+{
+  "name":"[[I"
+},
+{
+  "name":"[[J"
+},
+{
+  "name":"[[Lloci.formats.tiff.TiffRational;"
+},
 {
   "name":"boolean",
   "allDeclaredFields":true
@@ -24,11 +23,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.beust.jcommander.converters.IntegerConverter",
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
-},
-{
   "name":"com.beust.jcommander.validators.NoValidator",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -42,29 +36,8 @@
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"int",
-  "allDeclaredFields":true
-},
-{
   "name":"java.io.File",
   "allDeclaredFields":true
-},
-{
-  "name":"java.security.SecureRandomParameters"
-},
-{
-  "name":"javax.imageio.spi.ImageReaderSpi"
-},
-{
-  "name":"javax.imageio.spi.ImageReaderWriterSpi",
-  "methods":[
-    {"name":"getFileSuffixes","parameterTypes":[] }, 
-    {"name":"getFormatNames","parameterTypes":[] }, 
-    {"name":"getMIMETypes","parameterTypes":[] }
-  ]
-},
-{
-  "name":"javax.imageio.spi.ImageWriterSpi"
 },
 {
   "name":"loci.common.Log4jTools",
@@ -163,13 +136,5 @@
 },
 {
   "name":"ome.codecs.services.LuraWaveServiceImpl"
-},
-{
-  "name":"sun.security.provider.NativePRNG",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"sun.security.provider.SHA",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

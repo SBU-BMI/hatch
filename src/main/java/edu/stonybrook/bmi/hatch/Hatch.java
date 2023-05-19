@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 3.0.0 by Wing-n-Beak";
+    public static String software = "hatch 3.0.1 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     public static final String HELP = Hatch.software+"\n"+
         """

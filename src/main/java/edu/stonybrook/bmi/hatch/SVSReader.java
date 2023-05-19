@@ -190,7 +190,6 @@ public class SVSReader extends BaseTiffReader {
     if (!fileOnly) {
       zPosition = null;
       comments = null;
-
       emissionWavelength = null;
       excitationWavelength = null;
       exposureTime = null;
@@ -240,21 +239,15 @@ public class SVSReader extends BaseTiffReader {
   @Override
   protected void initStandardMetadata() throws FormatException, IOException {
     super.initStandardMetadata();
-
     ifds = tiffParser.getMainIFDs();
-
     int seriesCount = ifds.size();
-
     core.clear();
     for (int i=0; i<seriesCount; i++) {
       core.add(new SVSCoreMetadata());
     }
-
     zPosition = new Double[seriesCount];
     comments = new String[seriesCount];
-
-    HashSet<Double> uniqueZ = new HashSet<Double>();
-
+    HashSet<Double> uniqueZ = new HashSet<>();
     for (int i=0; i<seriesCount; i++) {
       setSeries(i);
       int index = getIFDIndex(i, 0);
@@ -281,16 +274,14 @@ public class SVSReader extends BaseTiffReader {
             key = t.substring(0, t.indexOf('=')).trim();
             value = t.substring(t.indexOf('=') + 1).trim();
             if (key.equals("TotalDepth")) {
-              zPosition[index] = new Double(0);
+              zPosition[index] = Double.valueOf(0);
             }
             else if (key.equals("OffsetZ")) {
               zPosition[index] = DataTools.parseDouble(value);
             }
-          }
-          else if (t.toLowerCase().indexOf("label") >= 0) {
+          } else if (t.toLowerCase().indexOf("label") >= 0) {
             labelIndex = i;
-          }
-          else if (t.toLowerCase().indexOf("macro") >= 0) {
+          } else if (t.toLowerCase().indexOf("macro") >= 0) {
             macroIndex = i;
           }
         }
@@ -333,13 +324,12 @@ public class SVSReader extends BaseTiffReader {
         ifds.remove(s);
       }
     }
-    if (uniqueZ.size() == 0) {
+    if (uniqueZ.isEmpty()) {
       uniqueZ.add(0d);
     }
     zPosition = uniqueZ.toArray(new Double[uniqueZ.size()]);
     Arrays.sort(zPosition);
     seriesCount = ((ifds.size() - extraImages) / uniqueZ.size()) + extraImages;
-
     core.clear();
     if (seriesCount > extraImages) {
       core.add();
@@ -349,24 +339,19 @@ public class SVSReader extends BaseTiffReader {
       for (int extra=0; extra<extraImages; extra++) {
         core.add(new SVSCoreMetadata());
       }
-    }
-    else {
+    } else {
       // Should never happen unless the SVS is corrupt?
       for (int s=0; s<seriesCount; s++) {
         core.add(new SVSCoreMetadata());
       }
     }
-
     for (int s=0; s<seriesCount; s++) {
       int[] pos = core.flattenedIndexes(s);
       setCoreIndex(s);
-
       SVSCoreMetadata ms = (SVSCoreMetadata) core.get(pos[0], pos[1]);
-
       if (s == 0 && seriesCount > extraImages) {
         ms.resolutionCount = seriesCount - extraImages;
       }
-
       IFD ifd = ifds.get(getIFDIndex(s, 0));
       tiffParser.fillInIFD(ifd);
       PhotoInterp p = ifd.getPhotometricInterpretation();
@@ -397,7 +382,6 @@ public class SVSReader extends BaseTiffReader {
       ms.falseColor = false;
       ms.dimensionOrder = "XYCZT";
       ms.thumbnail = s != 0;
-
       if (getMetadataOptions().getMetadataLevel() != MetadataLevel.MINIMUM) {
         String comment = ifds.get(ms.ifdIndex[0]).getComment();
         if (comment == null) {
@@ -458,7 +442,6 @@ public class SVSReader extends BaseTiffReader {
       }
     }
     setSeries(0);
-
     core.reorder();
   }
 
@@ -624,5 +607,4 @@ public class SVSReader extends BaseTiffReader {
   protected Color getDisplayColor() {
     return displayColor;
   }
-
 }

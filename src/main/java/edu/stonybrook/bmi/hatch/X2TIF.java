@@ -58,21 +58,25 @@ public class X2TIF implements AutoCloseable {
     private int TileSize;
     private final HatchParameters params;
     //private final Model m;
-    private final HatchWriter writer;
+    private HatchWriter writer;
     private IMetadata meta;
     private byte compression;
     
-    public X2TIF(HatchParameters params, String src, String dest) throws IOException {
-            time = new StopWatch();
-            inputFile = src;
-            outputFile = dest;
-            this.params = params;
+    public X2TIF(HatchParameters params, String src, String dest) {
+        time = new StopWatch();
+        inputFile = src;
+        outputFile = dest;
+        this.params = params;
+        try {
             writer = new HatchWriter(dest);
-            if (params.meta) {
-                // m = ModelFactory.createDefaultModel();
-            } else {
-                //  m = null;
-            }
+        } catch (IOException ex) {
+            Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if (params.meta) {
+            // m = ModelFactory.createDefaultModel();
+        } else {
+            //  m = null;
+        }
         if (params.verbose) {
             System.out.println("initializing...");
         }
@@ -124,7 +128,7 @@ public class X2TIF implements AutoCloseable {
                     throw new Error("Hatch can only convert images that have JPEG compression.");
                 }
             } catch (Error e){
-                System.out.println(e.getLocalizedMessage());
+                System.out.println(X2TIF.class.getName()+" : "+e.getLocalizedMessage());
                 System.exit(0);
             }
             File fdest = new File(outputFile);

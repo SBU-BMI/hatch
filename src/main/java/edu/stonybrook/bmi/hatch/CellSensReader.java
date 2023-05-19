@@ -1,5 +1,7 @@
 package edu.stonybrook.bmi.hatch;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1010,11 +1012,13 @@ public class CellSensReader extends FormatReader {
         }
       }
       BufferedImage bi = AWTImageTools.makeImage(tile, 512, 512, 3, true, 8/8, false, true, false);
+      Graphics2D graphics = bi.createGraphics();
+      graphics.setColor(Color.BLACK);
+      graphics.fillRect(0, 0, 512, 512);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ImageIO.write(bi, "jpg", baos );
       tile = baos.toByteArray();
-      throw new Error("BUFFER UNDER");
-      //return tile;
+      return tile;
     }
     Long offset = tileOffsets.get(getCoreIndex())[index];
     byte[] buf = null;
