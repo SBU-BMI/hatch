@@ -31,6 +31,7 @@ public class HatchWriter implements AutoCloseable {
     @Override
     public void close() {
         try (ros; writer) {
+            ros.flush();
             System.out.println("closing Writer....");
         } catch (IOException ex) {
             System.out.println("HatchWriter : "+ex);

@@ -1,4 +1,4 @@
-# Hatch 3.0.1
+# Hatch 3.0.2
 
 This tool converts the largest image in a VSI, SVS, or TIF image into a new TIFF image with a freshly created image pyramid with each scaling 1/2 dimensions each scale.
 
@@ -9,6 +9,17 @@ Features:
 2) Only transfers max size from original source files and drops all other images including cover slide images
 
 3) image pyramid is re-created from original image
+
+Build with:
+
+Jar version
+```
+mvn -Phatchjar clean package
+```
+Native-image version (requires fully configured Graalvm native-image environment)
+```
+mvn -Phatch clean package
+```
 
 Usage:
 ```

@@ -2,6 +2,7 @@ package edu.stonybrook.bmi.hatch;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 3.0.1 by Wing-n-Beak";
+    public static String software = "hatch 3.0.2 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     public static final String HELP = Hatch.software+"\n"+
         """
@@ -47,15 +48,14 @@ public class Hatch {
                     String frag = s.relativize(f).toString();
                     frag = frag.substring(0,frag.length()-4)+".tif";
                     Path t = Path.of(d.toString(), frag);
-                    t.toFile().getParentFile().mkdirs();
                     if (!t.toFile().exists()) {
                         System.out.println("PROCESSING FILE --> "+f);
-                        engine.submit(new FileProcessor(params, f.toString(), t.toString()));
+                        engine.submit(new FileProcessor(params, f, t));
                     } else if (t.toFile().length()==0) {
                         System.out.println("ZERO LENGTH FILE --> "+f);
                         t.toFile().delete();
                         System.out.println("RE-PROCESSING FILE --> "+f);
-                        engine.submit(new FileProcessor(params, f.toString(), t.toString()));
+                        engine.submit(new FileProcessor(params, f, t));
                     }
                 });
         } catch (IOException ex) {
@@ -124,18 +124,23 @@ public class Hatch {
 
 class FileProcessor implements Callable<String> {
     private final HatchParameters params;
-    private final String src;
-    private final String dest;
+    private final File src;
+    private final File dest;
 
-    public FileProcessor(HatchParameters params, String src, String dest) {
+    public FileProcessor(HatchParameters params, Path src, Path dest) {
         this.params = params;
-        this.src = src;
-        this.dest = dest;
+        this.src = src.toFile();
+        this.dest = dest.toFile();
     }
     
     @Override
     public String call() {
-        try (X2TIF v2t = new X2TIF(params, src, dest)) {
+        if (dest.exists()) {
+            dest.delete();
+        } else {
+            dest.getParentFile().mkdirs();
+        }
+        try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString())) {
             v2t.Execute();
         } catch (Exception ex) {
             System.out.println("FILE PROCESSOR ERROR --> "+src+" "+dest+" "+ex.toString());

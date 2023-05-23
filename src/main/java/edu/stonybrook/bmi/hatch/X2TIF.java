@@ -132,9 +132,6 @@ public class X2TIF implements AutoCloseable {
                 System.exit(0);
             }
             File fdest = new File(outputFile);
-            if (fdest.exists()) {
-                fdest.delete();
-            }
             int size = Math.max(width, height);
             int ss = (int) Math.ceil(Math.log(size)/Math.log(2));
             int tiless = (int) Math.ceil(Math.log(tileSizeX)/Math.log(2));
@@ -159,9 +156,11 @@ public class X2TIF implements AutoCloseable {
             meta.setPixelsSizeZ(new PositiveInteger(1), 0);
             meta.setPixelsSizeC(new PositiveInteger(3), 0);
             meta.setPixelsSizeT(new PositiveInteger(1), 0);
+            System.out.println("SRC : "+src+"   dest: "+fdest);
         } catch (DependencyException | ServiceException | FormatException | IOException ex) {
             Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
     }
     
     private int MaxImage(FormatReader reader) {
