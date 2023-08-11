@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 3.0.2 by Wing-n-Beak";
+    public static String software = "hatch 3.1.1 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     public static final String HELP = Hatch.software+"\n"+
         """
@@ -73,13 +73,19 @@ public class Hatch {
         engine.shutdown();
     }
     
+    private static String getFileNameBase(File file) {
+        String tail = file.getName();
+        return tail.substring(0,tail.length()-4);
+    }
+    
     public static void main(String[] args) {
         loci.common.DebugTools.setRootLevel("WARN");
         HatchParameters params = new HatchParameters();
         JCommander jc = JCommander.newBuilder().addObject(params).build();
-        jc.setProgramName(Hatch.software+"\nhatch");    
+        jc.setProgramName(Hatch.software+"\nhatch");
         try {
             jc.parse(args);
+            System.out.println(params);
             if (params.isHelp()) {
                 jc.usage();
                 System.exit(0);
@@ -91,26 +97,58 @@ public class Hatch {
                     if (!params.dest.isDirectory()) {
                         jc.usage();
                     } else {
+                        params.series.clear();  // ignore series parameter
                         Traverse(params);
                     }
                 } else {
+                    // Source is a single file
+                    if (!params.dest.exists()&&(!params.dest.toString().toLowerCase().endsWith(".tif"))) {
+                        params.dest.mkdirs();
+                    }
                     if (params.dest.exists()) {
                         if (!params.dest.isDirectory()) {
                             params.dest.delete();
-                            try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString())){
-                                v2t.Execute();
-                            } catch (Exception ex) {
-                                Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
+                            if (params.series.size()>1) {
+                                jc.usage();
+                            } else {
+                                Integer series = null;
+                                if (params.series.size()==1) {
+                                    series = Integer.valueOf(params.series.get(0));
+                                }
+                                try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString(), series)){
+                                    v2t.Execute();
+                                } catch (Exception ex) {
+                                    Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         } else {
-                            jc.usage();
+                            // destination is a directory
+                            if (params.series.isEmpty()) {
+                                File dest = Path.of(params.dest.toString(),getFileNameBase(params.src)+".tif").toFile();
+                                try (X2TIF v2t = new X2TIF(params, params.src.toString(), dest.toString(), null);) {
+                                    v2t.Execute();
+                                } catch (Exception ex) {
+                                    Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
+                                }  
+                            } else {
+                                params.series.forEach(s->{
+                                    File dest = Path.of(params.dest.toString(),getFileNameBase(params.src)+"-series-"+s+".tif").toFile();
+                                    try (X2TIF v2t = new X2TIF(params, params.src.toString(), dest.toString(), Integer.valueOf(s));) {
+                                        v2t.Execute();
+                                    } catch (Exception ex) {
+                                        Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
+                                    }  
+                                });
+                            }
                         }
                     } else {
-                        try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString());) {
+                        // Source and destination are a file
+                        params.series.clear(); // ignore series parameter
+                        try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString(), null);) {
                             v2t.Execute();
                         } catch (Exception ex) {
                             Logger.getLogger(Hatch.class.getName()).log(Level.SEVERE, null, ex);
-                        }
+                        } 
                     }
                 }
             } else {
@@ -140,7 +178,7 @@ class FileProcessor implements Callable<String> {
         } else {
             dest.getParentFile().mkdirs();
         }
-        try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString())) {
+        try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString(), null)) {
             v2t.Execute();
         } catch (Exception ex) {
             System.out.println("FILE PROCESSOR ERROR --> "+src+" "+dest+" "+ex.toString());

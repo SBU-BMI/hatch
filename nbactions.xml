@@ -12,8 +12,8 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>-v /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.svs /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.tif</exec.appArgs>
-                <exec.mainClass>edu.stonybrook.bmi.hatch.X2TIF</exec.mainClass>
+                <exec.appArgs>-s 0 -v -src /svs/test.svs -dest /svs/hold/text.tif -quality 0.1</exec.appArgs>
+                <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
         </action>
@@ -29,8 +29,8 @@
             <properties>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>-v /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.svs /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.tif</exec.appArgs>
-                <exec.mainClass>edu.stonybrook.bmi.hatch.X2TIF</exec.mainClass>
+                <exec.appArgs>-s 0 -v -src /svs/test.svs -dest /svs/hold/text.tif -quality 0.1</exec.appArgs>
+                <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
             </properties>
@@ -47,9 +47,9 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.mainClass>edu.stonybrook.bmi.hatch.X2TIF</exec.mainClass>
+                <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>-v /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.svs /svs/TCGA-5T-A9QA-01Z-00-DX1.B4212117-E0A7-4EF2-B324-8396042ACEC1.tif</exec.appArgs>
+                <exec.appArgs>-s 0 -v -src /svs/test.svs -dest /svs/hold/text.tif -quality 0.1</exec.appArgs>
             </properties>
         </action>
     </actions>

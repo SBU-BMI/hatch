@@ -28,16 +28,20 @@ public class HatchParameters {
 
     @Parameter(names = "-cores", description = "# of cores for processing")
     public int cores = Runtime.getRuntime().availableProcessors();
-    
-    @Parameter
-    public List<String> parameters = Lists.newArrayList();
-    
+        
     @Parameter(names = {"-v","-verbose"})
     public boolean verbose = false;
     
-    @Parameter(names = "-meta")
-    public boolean meta = false;
+    //@Parameter(names = "-meta")
+    //public boolean meta = false;
 
     @Parameter(names = "-jp2", hidden = true)
     public boolean jp2 = false;
+    
+    @Parameter(names = {"-quality","-q"}, description = "pyramid JPEG compression quality 0.0 < q <1.0")
+    public float quality = 1.0f;
+    
+    @Parameter(names = {"-s","-series"}, description = "specify source series separated by commas")
+    public List<String> series = Lists.newArrayList();
+    
 }

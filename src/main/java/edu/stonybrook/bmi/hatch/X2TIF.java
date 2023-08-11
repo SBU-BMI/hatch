@@ -62,21 +62,16 @@ public class X2TIF implements AutoCloseable {
     private IMetadata meta;
     private byte compression;
     
-    public X2TIF(HatchParameters params, String src, String dest) {
+    public X2TIF(HatchParameters params, String src, String dest, Integer series) {
         time = new StopWatch();
         inputFile = src;
         outputFile = dest;
         this.params = params;
-        try {
-            writer = new HatchWriter(dest);
-        } catch (IOException ex) {
-            Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        if (params.meta) {
+      //  if (params.meta) {
             // m = ModelFactory.createDefaultModel();
-        } else {
+       // } else {
             //  m = null;
-        }
+        //}
         if (params.verbose) {
             System.out.println("initializing...");
         }
@@ -100,7 +95,20 @@ public class X2TIF implements AutoCloseable {
             }            
             reader.setMetadataStore(omexml);
             reader.setId(inputFile);
-            maximage = MaxImage(reader);
+            if (series==null) {
+                maximage = MaxImage(reader);
+            } else {
+                maximage = series;
+            }
+            if ((series!=null)&&((series<0)||(series>reader.getSeriesCount()))) {
+                System.out.println("Series doesn't exist : "+src+" --> "+series);
+                System.exit(0);
+            }
+            try {
+               writer = new HatchWriter(dest);
+            } catch (IOException ex) {
+                Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+            }
             reader.setSeries(maximage);
             tileSizeX = reader.getOptimalTileWidth();
             tileSizeY = reader.getOptimalTileHeight();
@@ -330,9 +338,10 @@ public class X2TIF implements AutoCloseable {
                 //Dump2File3(raw, x, y);
                 switch (compression) {
                     case 0:
-                        BufferedImage bi = ImageIO.read(new ByteArrayInputStream(raw));
-                        bi = bi.getSubimage(0, 0, effTileSizeX, effTileSizeY);
-                        pyramid.put(bi, x, y);
+                        //BufferedImage bi = ImageIO.read(new ByteArrayInputStream(raw));
+                        //bi = bi.getSubimage(0, 0, effTileSizeX, effTileSizeY);
+                        //pyramid.put(bi, x, y);
+                        pyramid.put(raw, x, y);
                         break;
                     case 2:
                         try {
@@ -387,9 +396,6 @@ public class X2TIF implements AutoCloseable {
             for (int y=0; y<pyramid.gettilesY(); y++) {
                 for (int x=0; x<pyramid.gettilesX(); x++) {
                     byte[] b = pyramid.GetImageBytes(x, y);
-                    BufferedImage bi = pyramid.getBufferedImage(x, y);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ImageIO.write(bi, "jpg", baos);
                     writer.writeIFDStrips(ifd, b, ((x==(pyramid.gettilesX()-1))&&(y==(pyramid.gettilesY()-1))&&(s==depth-1)), x*tileSizeX, y*tileSizeY);
                 }
             }

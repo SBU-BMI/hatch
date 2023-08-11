@@ -1,6 +1,5 @@
 package edu.stonybrook.bmi.hatch;
 
-import static edu.stonybrook.bmi.hatch.Pyramid.CompressionSize;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.AffineTransform;
@@ -37,7 +36,6 @@ public class Pyramid {
     private final int tileSizeX;
     private final int tileSizeY;
     private int xscale = 0;
-    public static float CompressionSize = 0.70f;
     public static float DownScale = 0.5f;
     private int width;
     private int height;
@@ -52,6 +50,10 @@ public class Pyramid {
         this.height = height;
         this.width = width;
         tiles = new JPEGBuffer[tilesX][tilesY];
+    }
+    
+    public HatchParameters getParameters() {
+        return params;
     }
     
     public int gettilesX() {
@@ -99,7 +101,7 @@ public class Pyramid {
         ImageWriteParam param = jpgWriter.getDefaultWriteParam();
         param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         param.setProgressiveMode(ImageWriteParam.MODE_DISABLED);
-        param.setCompressionQuality(CompressionSize);
+        param.setCompressionQuality(params.quality);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         MemoryCacheImageOutputStream outputStream = new MemoryCacheImageOutputStream(baos);
         outputStream.setByteOrder(ByteOrder.LITTLE_ENDIAN);
@@ -146,7 +148,7 @@ public class Pyramid {
                 ImageWriteParam param = jpgWriter.getDefaultWriteParam();
                 param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
                 param.setProgressiveMode(ImageWriteParam.MODE_DISABLED);
-                param.setCompressionQuality(CompressionSize);
+                param.setCompressionQuality(params.quality);
                 FileOutputStream fos = new FileOutputStream("/vsi/whoa/"+xscale+"----"+a+"-"+b+".jpg");
                 ImageOutputStream stream = ImageIO.createImageOutputStream(fos);
                 jpgWriter.setOutput(stream);
@@ -166,7 +168,11 @@ public class Pyramid {
     }
     
     public void put(BufferedImage bi, int x, int y) {
-        tiles[x][y] = new JPEGBuffer(bi,CompressionSize);
+        tiles[x][y] = new JPEGBuffer(bi,params.quality);
+    }
+    
+    public void put(byte[] buffer, int x, int y) {
+        tiles[x][y] = new JPEGBuffer(buffer);
     }
     
     public void put(BufferedImage bi, int x, int y, float scale) {
@@ -310,7 +316,7 @@ class MergeProcessor implements Callable<JPEGBuffer> {
             }
             int nx = a/2;
             int ny = b/2;
-            neotiles[nx][ny] = new JPEGBuffer(Merge(nw,ne,sw,se),CompressionSize);
+            neotiles[nx][ny] = new JPEGBuffer(Merge(nw,ne,sw,se),pyramid.getParameters().quality);
         } else {
             throw new Error("NW TILE NULL!!!");
         }
