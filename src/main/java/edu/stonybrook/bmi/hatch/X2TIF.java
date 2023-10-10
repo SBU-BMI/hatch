@@ -57,7 +57,6 @@ public class X2TIF implements AutoCloseable {
     private TiffRational py;
     private int TileSize;
     private final HatchParameters params;
-    //private final Model m;
     private HatchWriter writer;
     private IMetadata meta;
     private byte compression;
@@ -67,11 +66,6 @@ public class X2TIF implements AutoCloseable {
         inputFile = src;
         outputFile = dest;
         this.params = params;
-      //  if (params.meta) {
-            // m = ModelFactory.createDefaultModel();
-       // } else {
-            //  m = null;
-        //}
         if (params.verbose) {
             System.out.println("initializing...");
         }
@@ -139,7 +133,6 @@ public class X2TIF implements AutoCloseable {
                 System.out.println(X2TIF.class.getName()+" : "+e.getLocalizedMessage());
                 System.exit(0);
             }
-            File fdest = new File(outputFile);
             int size = Math.max(width, height);
             int ss = (int) Math.ceil(Math.log(size)/Math.log(2));
             int tiless = (int) Math.ceil(Math.log(tileSizeX)/Math.log(2));
@@ -164,7 +157,6 @@ public class X2TIF implements AutoCloseable {
             meta.setPixelsSizeZ(new PositiveInteger(1), 0);
             meta.setPixelsSizeC(new PositiveInteger(3), 0);
             meta.setPixelsSizeT(new PositiveInteger(1), 0);
-            System.out.println("SRC : "+src+"   dest: "+fdest);
         } catch (DependencyException | ServiceException | FormatException | IOException ex) {
             Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -265,7 +257,7 @@ public class X2TIF implements AutoCloseable {
         if (params.verbose) {
             System.out.println("transferring image data...");
         }
-        reader.setSeries(maximage);
+        reader.setSeries(maximage);       
         int nXTiles = width / tileSizeX;
         int nYTiles = height / tileSizeY;
         if (nXTiles * tileSizeX != width) nXTiles++;
@@ -288,12 +280,12 @@ public class X2TIF implements AutoCloseable {
             comp = "UNKNOWN";
         }
         switch (comp) {
-            case "JPEG-2000":
-                compression = 2;
+            //case "JPEG-2000":
+//                compression = 2;
                 //ifd.put(IFD.COMPRESSION, 34712); 
-                ifd.put(IFD.COMPRESSION, 33005);
+  //              ifd.put(IFD.COMPRESSION, 33005);
                 //ifd.put(IFD.COMPRESSION, 33003);
-                break;
+    //            break;
             case "JPEG":
             case "UNKNOWN":
                 compression = 0;
@@ -313,7 +305,8 @@ public class X2TIF implements AutoCloseable {
         ifd.put(IFD.RESOLUTION_UNIT, 3);
         ifd.put(IFD.SAMPLE_FORMAT, new int[] {1, 1, 1});
         if (inputFile.toLowerCase().endsWith(".vsi")) {
-            ifd.put(IFD.Y_CB_CR_SUB_SAMPLING, new int[] {2, 1});
+            //ifd.put(IFD.Y_CB_CR_SUB_SAMPLING, new int[] {2, 1});
+            ifd.put(IFD.Y_CB_CR_SUB_SAMPLING, new int[] {1, 1});
             ifd.putIFDValue(IFD.PHOTOMETRIC_INTERPRETATION, PhotoInterp.Y_CB_CR.getCode());
         } else if (inputFile.toLowerCase().endsWith(".svs")) {
             IFD x = reader.getIFDs().get(maximage);
@@ -322,17 +315,17 @@ public class X2TIF implements AutoCloseable {
         } else {
             throw new Error("IFD.PHOTOMETRIC_INTERPRETATION ERROR!!!");
         }
-        JPEG2000Codec codec = new JPEG2000Codec();
+       // JPEG2000Codec codec = new JPEG2000Codec();
         for (int y=0; y<nYTiles; y++) {
             if (params.verbose) {
                 float perc = 100f*y/nYTiles;
                 System.out.println(String.format("%.2f%%",perc));
             }
             for (int x=0; x<nXTiles; x++) {
-                int tileX = x * tileSizeX;
-                int tileY = y * tileSizeX;
-                int effTileSizeX = (tileX + tileSizeX) < width ? tileSizeX : width - tileX;
-                int effTileSizeY = (tileY + tileSizeY) < height ? tileSizeY : height - tileY;
+                //int tileX = x * tileSizeX;
+                //int tileY = y * tileSizeX;
+                //int effTileSizeX = (tileX + tileSizeX) < width ? tileSizeX : width - tileX;
+                //int effTileSizeY = (tileY + tileSizeY) < height ? tileSizeY : height - tileY;
                 byte[] raw = reader.getRawBytes(rawbuffer, 0, y, x);
                 writer.writeIFDStrips(ifd, raw, false, x*tileSizeX, y*tileSizeY);
                 //Dump2File3(raw, x, y);
@@ -343,6 +336,7 @@ public class X2TIF implements AutoCloseable {
                         //pyramid.put(bi, x, y);
                         pyramid.put(raw, x, y);
                         break;
+                        /*
                     case 2:
                         try {
                             byte[] buff = codec.decompress(raw);
@@ -353,7 +347,7 @@ public class X2TIF implements AutoCloseable {
                         } catch (CodecException ex) {
                             Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        break;
+                        break;*/
                     default:
                         throw new Error("Unknown Compression!");
                 }                                  
@@ -363,7 +357,6 @@ public class X2TIF implements AutoCloseable {
             time.Cumulative();
             System.out.println("Generate image pyramid...");
         }
-        //ifd.put(IFD.NEW_SUBFILE_TYPE, 1);
         ifd.remove(IFD.Y_CB_CR_SUB_SAMPLING);
         ifd.remove(IFD.IMAGE_DESCRIPTION);
         ifd.remove(IFD.SOFTWARE);
@@ -374,20 +367,24 @@ public class X2TIF implements AutoCloseable {
             if (params.verbose) {
                 System.out.println("Level : "+s+" of "+depth);
             }
-            System.out.println("Lump...");
+            if (params.verbose) {
+                System.out.println("Lump...");
+            }
             pyramid.Lump();
-            time.Lap();
-            System.out.println("Shrink...");
+            if (params.verbose) {
+                System.out.println("Shrink...");
+            }
             pyramid.Shrink();
-            time.Lap();
-            time.Cumulative();
-            System.out.println(pyramid.gettilesX()+" X "+pyramid.gettilesY());
-            System.out.println("Resolution S="+s+" "+pyramid.getWidth()+"x"+pyramid.getHeight());
+            if (params.verbose) {
+                System.out.println(pyramid.gettilesX()+" X "+pyramid.gettilesY());
+                System.out.println("Resolution S="+s+" "+pyramid.getWidth()+"x"+pyramid.getHeight());
+            }
             writer.nextImage();
             if (params.verbose) {
                 System.out.println("Writing level "+s+"...");
             }
             numtiles = pyramid.gettilesX()*pyramid.gettilesY();
+            ifd.put(IFD.NEW_SUBFILE_TYPE, 1L);
             ifd.put(IFD.IMAGE_WIDTH, (long) pyramid.getWidth());
             ifd.put(IFD.IMAGE_LENGTH, (long) pyramid.getHeight());
             ifd.put(IFD.TILE_OFFSETS, new long[numtiles]);

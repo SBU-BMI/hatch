@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.stonybrook.bmi</groupId>
   <artifactId>hatch</artifactId>
-  <version>3.1.1</version>
+  <version>3.1.2</version>
   <build>
     <resources>
       <resource>
@@ -28,7 +28,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>3.4.1</version>
             <executions>
               <execution>
                 <id>enforce</id>
@@ -87,7 +87,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.9.21</version>
+            <version>0.9.27</version>
             <extensions>true</extensions>
             <executions>
               <execution>
@@ -129,9 +129,9 @@
     </repository>
   </repositories>
   <properties>
-    <maven.compiler.target>17</maven.compiler.target>
-    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ver.bioformats>6.12.0</ver.bioformats>
+    <ver.bioformats>7.0.0</ver.bioformats>
   </properties>
 </project>

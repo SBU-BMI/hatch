@@ -26,14 +26,8 @@ public class HatchParameters {
     @Parameter(names = "-fp", description = "# of file processors")
     public int fp = 1;  
 
-    @Parameter(names = "-cores", description = "# of cores for processing")
-    public int cores = Runtime.getRuntime().availableProcessors();
-        
     @Parameter(names = {"-v","-verbose"})
     public boolean verbose = false;
-    
-    //@Parameter(names = "-meta")
-    //public boolean meta = false;
 
     @Parameter(names = "-jp2", hidden = true)
     public boolean jp2 = false;

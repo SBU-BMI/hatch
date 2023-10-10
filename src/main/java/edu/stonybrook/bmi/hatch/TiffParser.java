@@ -199,10 +199,11 @@ public class TiffParser implements Closeable {
       return null;
     }
 
-    return new Boolean(littleEndian);
+    return littleEndian;
   }
 
-  /** Returns whether or not the current TIFF file contains BigTIFF data. */
+  /** Returns whether or not the current TIFF file contains BigTIFF data.
+     * @return  */
   public boolean isBigTiff() {
     return bigTiff;
   }
