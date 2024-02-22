@@ -29,6 +29,15 @@ public class HatchParameters {
     @Parameter(names = {"-v","-verbose"})
     public boolean verbose = false;
 
+    @Parameter(names = {"-o","-overwrite"})
+    public boolean overwrite = false;
+    
+    @Parameter(names = {"-r","-retry"})
+    public boolean retry = false;
+    
+    @Parameter(names = {"-validate"})
+    public boolean validate = false;
+    
     @Parameter(names = "-jp2", hidden = true)
     public boolean jp2 = false;
     

@@ -3,13 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.stonybrook.bmi</groupId>
 	<artifactId>hatch</artifactId>
-	<version>3.1.2</version>
+	<version>3.2.0</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
 		<ver.bioformats>7.0.0</ver.bioformats>
+                <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
 	</properties>
 	<dependencies>
             <dependency>
@@ -28,6 +29,11 @@
                 <groupId>com.beust</groupId>
                 <artifactId>jcommander</artifactId>
                 <version>1.82</version>
+            </dependency>
+            <dependency>
+                <groupId>com.twelvemonkeys.imageio</groupId>
+                <artifactId>imageio-tiff</artifactId>
+                <version>${twelvemonkeys.version}</version>
             </dependency>
 	</dependencies>
 	<build>
@@ -87,7 +93,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-shade-plugin</artifactId>
-                            <version>3.4.1</version>
+                            <version>3.5.1</version>
                             <configuration>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <transformers>
@@ -129,7 +135,7 @@
                         <plugin>
                             <groupId>org.graalvm.buildtools</groupId>
                             <artifactId>native-maven-plugin</artifactId>
-                            <version>0.9.27</version>
+                            <version>0.10.0</version>
                             <extensions>true</extensions>
                             <executions>
                                 <execution>

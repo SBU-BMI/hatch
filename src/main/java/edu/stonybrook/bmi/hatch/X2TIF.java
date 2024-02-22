@@ -1,7 +1,6 @@
 package edu.stonybrook.bmi.hatch;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,8 +26,6 @@ import loci.formats.services.OMEXMLService;
 import loci.formats.tiff.IFD;
 import loci.formats.tiff.PhotoInterp;
 import loci.formats.tiff.TiffRational;
-import ome.codecs.CodecException;
-import ome.codecs.JPEG2000Codec;
 import ome.units.UNITS;
 import ome.units.quantity.Length;
 import ome.xml.model.enums.DimensionOrder;
@@ -60,14 +57,16 @@ public class X2TIF implements AutoCloseable {
     private HatchWriter writer;
     private IMetadata meta;
     private byte compression;
+    private static Logger LOGGER;
     
     public X2TIF(HatchParameters params, String src, String dest, Integer series) {
+        LOGGER = Logger.getLogger(X2TIF.class.getName());
         time = new StopWatch();
         inputFile = src;
         outputFile = dest;
         this.params = params;
         if (params.verbose) {
-            System.out.println("initializing...");
+            LOGGER.log(Level.INFO,"initializing...");
         }
         try {
             ServiceFactory factory = new ServiceFactory();
@@ -95,13 +94,13 @@ public class X2TIF implements AutoCloseable {
                 maximage = series;
             }
             if ((series!=null)&&((series<0)||(series>reader.getSeriesCount()))) {
-                System.out.println("Series doesn't exist : "+src+" --> "+series);
+                LOGGER.log(Level.INFO,"Series doesn't exist : "+src+" --> "+series);
                 System.exit(0);
             }
             try {
                writer = new HatchWriter(dest);
             } catch (IOException ex) {
-                Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
             }
             reader.setSeries(maximage);
             tileSizeX = reader.getOptimalTileWidth();
@@ -113,16 +112,16 @@ public class X2TIF implements AutoCloseable {
             ppy = retrieve.getPixelsPhysicalSizeY(maximage);            
             SetPPS();
             if (params.verbose) {
-                System.out.println("Image Size   : "+width+"x"+height);
-                System.out.println("Tile size    : "+tileSizeX+"x"+tileSizeY);
-                System.out.println("Compression  : "+reader.metadata.get("Compression"));
+                LOGGER.log(Level.INFO,"Image Size   : "+width+"x"+height);
+                LOGGER.log(Level.INFO,"Tile size    : "+tileSizeX+"x"+tileSizeY);
+                LOGGER.log(Level.INFO,"Compression  : "+reader.metadata.get("Compression"));
             }
             //String xml = service.getOMEXML(omexml);
-            //System.out.println(xml);
+            //Systsm.out.println(xml);
             try {
                 if (reader.metadata.get("Compression")==null) {
                     if (params.verbose) {
-                        System.out.println("NULL compression specified...trying JPEG...no promises...");
+                        LOGGER.log(Level.INFO,"NULL compression specified...trying JPEG...no promises...");
                     }
                 } else if ((reader.metadata.get("Compression")=="JPEG-2000")&&params.jp2) {
                     
@@ -130,7 +129,7 @@ public class X2TIF implements AutoCloseable {
                     throw new Error("Hatch can only convert images that have JPEG compression.");
                 }
             } catch (Error e){
-                System.out.println(X2TIF.class.getName()+" : "+e.getLocalizedMessage());
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage()+" : "+src+"  "+dest);
                 System.exit(0);
             }
             int size = Math.max(width, height);
@@ -139,7 +138,7 @@ public class X2TIF implements AutoCloseable {
             depth = ss-tiless+2;
             TileSize = reader.getOptimalTileHeight() * reader.getOptimalTileWidth() * 24;
             if (params.verbose) {
-                System.out.println("# of scales to be generated : "+depth);
+                LOGGER.log(Level.INFO,"# of scales to be generated : "+depth);
             }
             meta = service.createOMEXMLMetadata();
             meta.setImageID("Image:0", 0);
@@ -157,8 +156,14 @@ public class X2TIF implements AutoCloseable {
             meta.setPixelsSizeZ(new PositiveInteger(1), 0);
             meta.setPixelsSizeC(new PositiveInteger(3), 0);
             meta.setPixelsSizeT(new PositiveInteger(1), 0);
-        } catch (DependencyException | ServiceException | FormatException | IOException ex) {
-            Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (DependencyException ex) {
+            LOGGER.log(Level.SEVERE, "DependencyException : "+src+"  "+dest);
+        } catch (ServiceException ex) {
+            LOGGER.log(Level.SEVERE, "ServiceException : "+src+"  "+dest);
+        } catch (FormatException ex) {
+            LOGGER.log(Level.SEVERE, "FormatException : "+src+"  "+dest);
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "IOException : "+src+"  "+dest);
         }
         
     }
@@ -210,9 +215,9 @@ public class X2TIF implements AutoCloseable {
                 fos.flush();
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
         } catch (IOException ex) {
-            Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
         }
     }
     
@@ -234,14 +239,14 @@ public class X2TIF implements AutoCloseable {
             try {
                 jpgWriter.write(null, outputImage, param);
             } catch (IOException ex) {
-                Logger.getLogger(NeoJPEGCodec.class.getName()).log(Level.SEVERE, null, ex);
+               LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
             }
             jpgWriter.dispose();
             Files.write(f.toPath(), baos.toByteArray());
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
         } catch (IOException ex) {
-            Logger.getLogger(Pyramid.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
         }
     }
     
@@ -255,7 +260,7 @@ public class X2TIF implements AutoCloseable {
         
     public void readWriteTiles() throws FormatException, IOException {
         if (params.verbose) {
-            System.out.println("transferring image data...");
+            LOGGER.log(Level.INFO,"transferring image data...");
         }
         reader.setSeries(maximage);       
         int nXTiles = width / tileSizeX;
@@ -319,7 +324,7 @@ public class X2TIF implements AutoCloseable {
         for (int y=0; y<nYTiles; y++) {
             if (params.verbose) {
                 float perc = 100f*y/nYTiles;
-                System.out.println(String.format("%.2f%%",perc));
+                LOGGER.log(Level.INFO,String.format("%.2f%%",perc));
             }
             for (int x=0; x<nXTiles; x++) {
                 //int tileX = x * tileSizeX;
@@ -355,7 +360,7 @@ public class X2TIF implements AutoCloseable {
         }
         if (params.verbose) {
             time.Cumulative();
-            System.out.println("Generate image pyramid...");
+            LOGGER.log(Level.INFO,"Generate image pyramid...");
         }
         ifd.remove(IFD.Y_CB_CR_SUB_SAMPLING);
         ifd.remove(IFD.IMAGE_DESCRIPTION);
@@ -365,23 +370,23 @@ public class X2TIF implements AutoCloseable {
         ifd.put(IFD.COMPRESSION, 7);
         for (int s=1;s<depth;s++) {
             if (params.verbose) {
-                System.out.println("Level : "+s+" of "+depth);
+                LOGGER.log(Level.INFO,"Level : "+s+" of "+depth);
             }
             if (params.verbose) {
-                System.out.println("Lump...");
+                LOGGER.log(Level.INFO,"Lump...");
             }
             pyramid.Lump();
             if (params.verbose) {
-                System.out.println("Shrink...");
+                LOGGER.log(Level.INFO,"Shrink...");
             }
             pyramid.Shrink();
             if (params.verbose) {
-                System.out.println(pyramid.gettilesX()+" X "+pyramid.gettilesY());
-                System.out.println("Resolution S="+s+" "+pyramid.getWidth()+"x"+pyramid.getHeight());
+                LOGGER.log(Level.INFO,pyramid.gettilesX()+" X "+pyramid.gettilesY());
+                LOGGER.log(Level.INFO,"Resolution S="+s+" "+pyramid.getWidth()+"x"+pyramid.getHeight());
             }
             writer.nextImage();
             if (params.verbose) {
-                System.out.println("Writing level "+s+"...");
+                LOGGER.log(Level.INFO,"Writing level "+s+"...");
             }
             numtiles = pyramid.gettilesX()*pyramid.gettilesY();
             ifd.put(IFD.NEW_SUBFILE_TYPE, 1L);
@@ -405,18 +410,14 @@ public class X2TIF implements AutoCloseable {
             bb = AWTImageTools.makeImage(buf, reader.isInterleaved(), meta, 0);
             return bb;
         } catch (FormatException ex) {
-            Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> "+params.src+" "+params.dest+" "+ex.toString());
         } 
         return bb;
     }
     
-    public void Execute() {
-        try {
-            readWriteTiles();
-            time.Cumulative();
-        } catch(IOException | FormatException e) {
-            System.err.println(e.toString());
-        }
+    public void Execute() throws FormatException, IOException {
+        readWriteTiles();
+        time.Cumulative();
     }
 
     @Override
