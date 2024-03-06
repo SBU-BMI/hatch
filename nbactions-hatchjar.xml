@@ -12,7 +12,7 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>-src \vsi\vsi -dest \vsi\warp</exec.appArgs>
+                <exec.appArgs>-v -src D:\HalcyonStorage\tcga\brca -dest D:\HalcyonStorage\tcga\brca\tif</exec.appArgs>
                 <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
@@ -29,7 +29,7 @@
             <properties>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>-src \vsi\vsi -dest \vsi\warp</exec.appArgs>
+                <exec.appArgs>-v -src D:\HalcyonStorage\tcga\brca -dest D:\HalcyonStorage\tcga\brca\tif</exec.appArgs>
                 <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
@@ -49,7 +49,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>edu.stonybrook.bmi.hatch.Hatch</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>-src \vsi\vsi -dest \vsi\warp</exec.appArgs>
+                <exec.appArgs>-v -src D:\HalcyonStorage\tcga\brca -dest D:\HalcyonStorage\tcga\brca\tif</exec.appArgs>
             </properties>
         </action>
     </actions>

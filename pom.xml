@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.stonybrook.bmi</groupId>
 	<artifactId>hatch</artifactId>
-	<version>3.2.0</version>
+	<version>3.3.0</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -34,6 +34,12 @@
                 <groupId>com.twelvemonkeys.imageio</groupId>
                 <artifactId>imageio-tiff</artifactId>
                 <version>${twelvemonkeys.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.jena</groupId>
+                <artifactId>apache-jena-libs</artifactId>
+                <version>5.0.0-rc1</version>
+                <type>pom</type>
             </dependency>
 	</dependencies>
 	<build>

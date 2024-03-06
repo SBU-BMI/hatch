@@ -1,0 +1,23 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 9.1-c002 79.f354efc, 2023/11/09-12:40:27        ">   
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+      <rdf:Description rdf:about="http://njh.me/"
+            xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+            xmlns:dc="http://purl.org/dc/elements/1.1/"
+            xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"
+            xmlns:DICOM="http://ns.adobe.com/DICOM/">
+         <xmp:CreatorTool>Adobe Photoshop 25.4 (Windows)</xmp:CreatorTool>
+         <xmp:CreateDate>2023-08-30T08:38:17-04:00</xmp:CreateDate>
+         <xmp:ModifyDate>2023-08-30T08:38:37-04:00</xmp:ModifyDate>
+         <xmp:MetadataDate>2023-08-30T08:38:37-04:00</xmp:MetadataDate>
+         <dc:format>application/vnd.adobe.photoshop</dc:format>
+         <photoshop:ColorMode>3</photoshop:ColorMode>
+         <photoshop:ICCProfile>sRGB IEC61966-2.1</photoshop:ICCProfile>
+         <DICOM:PatientName>BeakBeakBeakBeakBeakBeakBeakBeakBeakBeak</DICOM:PatientName>
+         <DICOM:PatientID>1701</DICOM:PatientID>
+         <DICOM:ObjectiveLensPower>40.0</DICOM:ObjectiveLensPower>
+         <DICOM:PatientSex>female</DICOM:PatientSex>
+         <DICOM:StudyID>123</DICOM:StudyID>
+         <DICOM:SeriesModality>CT</DICOM:SeriesModality>
+      </rdf:Description>
+   </rdf:RDF>
+</x:xmpmeta>

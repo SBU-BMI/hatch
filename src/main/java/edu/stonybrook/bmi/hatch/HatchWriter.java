@@ -13,6 +13,7 @@ import loci.formats.tiff.IFD;
 public class HatchWriter implements AutoCloseable {
     private final RandomAccessOutputStream ros;
     private final HatchSaver writer;
+    //private XMP xmp = null;
     
     public HatchWriter(String file) throws IOException {
         ros = new RandomAccessOutputStream(file);
@@ -27,6 +28,10 @@ public class HatchWriter implements AutoCloseable {
     public void nextImage() throws IOException {
         ros.seek(ros.length());
     }
+    
+    //public void setXMP(XMP xmp) {
+      //  this.xmp = xmp;
+    //}
 
     @Override
     public void close() {
@@ -39,6 +44,9 @@ public class HatchWriter implements AutoCloseable {
     }
 
     public void writeIFDStrips(IFD ifd, byte[] raw, boolean last, int x, int y) throws FormatException, IOException {
+      //  if (xmp!=null) {
+        //    ifd.putIFDValue(700, xmp.getXMPString());
+        //}
         byte[][] tilestrip = new byte[1][];
         tilestrip[0] = raw;
         writer.writeIFDStrips(ifd, tilestrip, 3, last, x, y);

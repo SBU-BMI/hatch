@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 3.2.0 by Wing-n-Beak";
+    public static String software = "hatch 3.3.0 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     private static final String errorlog = "error.log";
     private static Logger LOGGER;
