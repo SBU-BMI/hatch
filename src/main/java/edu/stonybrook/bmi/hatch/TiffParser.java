@@ -15,8 +15,6 @@ import loci.common.enumeration.EnumException;
 import loci.formats.FormatException;
 import loci.formats.ImageTools;
 import loci.formats.codec.CodecOptions;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
 import loci.formats.tiff.IFDType;
 import loci.formats.tiff.OnDemandLongArray;
 import loci.formats.tiff.PhotoInterp;
@@ -792,7 +790,7 @@ public class TiffParser implements Closeable {
     codecOptions.maxBytes = (int) Math.max(size, tile.length);
     codecOptions.ycbcr = ifd.getPhotometricInterpretation() == PhotoInterp.Y_CB_CR && ifd.getIFDIntValue(IFD.Y_CB_CR_SUB_SAMPLING) == 1 && ycbcrCorrection;
     tile = compression.decompress(tile, codecOptions);
-    loci.formats.tiff.TiffCompression.undifference(tile, ifd);
+    TiffCompression.undifference(tile, ifd);
     unpackBytes(buf, 0, tile, ifd);
 
     if (planarConfig == 2 && !ifd.isTiled() && ifd.getSamplesPerPixel() > 1) {
@@ -879,9 +877,9 @@ public class TiffParser implements Closeable {
     LOGGER.trace("reading image data (samplesPerPixel={}; numSamples={})",
       samplesPerPixel, numSamples);
 
-    loci.formats.tiff.TiffCompression compression = ifd.getCompression();
+    TiffCompression compression = ifd.getCompression();
 
-    if (compression == loci.formats.tiff.TiffCompression.JPEG_2000 || compression == loci.formats.tiff.TiffCompression.JPEG_2000_LOSSY) {
+    if (compression == TiffCompression.JPEG_2000 || compression == TiffCompression.JPEG_2000_LOSSY) {
       codecOptions = compression.getCompressionCodecOptions(ifd, codecOptions);
     } else codecOptions = compression.getCompressionCodecOptions(ifd);
     codecOptions.interleaved = true;
@@ -935,7 +933,7 @@ public class TiffParser implements Closeable {
     if ((effectiveChannels == 1 || planarConfig == 1) && (ifd.getBitsPerSample()[0] % 8) == 0 &&
       photoInterp != PhotoInterp.WHITE_IS_ZERO &&
       photoInterp != PhotoInterp.CMYK && photoInterp != PhotoInterp.Y_CB_CR &&
-      compression == loci.formats.tiff.TiffCompression.UNCOMPRESSED &&
+      compression == TiffCompression.UNCOMPRESSED &&
       ifd.getIFDIntValue(IFD.FILL_ORDER) != 2 &&
       stripOffsets != null && stripByteCounts != null &&
       in.length() >= stripOffsets[0] + stripByteCounts[0] &&
@@ -1127,10 +1125,10 @@ public class TiffParser implements Closeable {
   {
     boolean planar = ifd.getPlanarConfiguration() == 2;
 
-    loci.formats.tiff.TiffCompression compression = ifd.getCompression();
+    TiffCompression compression = ifd.getCompression();
     PhotoInterp photoInterp = ifd.getPhotometricInterpretation();
-    if (compression == loci.formats.tiff.TiffCompression.JPEG ||
-      compression == loci.formats.tiff.TiffCompression.JPEGXR)
+    if (compression == TiffCompression.JPEG ||
+      compression == TiffCompression.JPEGXR)
     {
       photoInterp = PhotoInterp.RGB;
     }

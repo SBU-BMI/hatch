@@ -16,7 +16,6 @@ import loci.formats.FormatTools;
 import loci.formats.MetadataTools;
 import loci.formats.in.MetadataLevel;
 import loci.formats.meta.MetadataStore;
-import loci.formats.tiff.IFD;
 import loci.formats.tiff.PhotoInterp;
 import loci.formats.tiff.TiffIFDEntry;
 import ome.xml.model.primitives.Color;

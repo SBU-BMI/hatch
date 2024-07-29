@@ -16,9 +16,6 @@ import loci.formats.FormatException;
 import loci.formats.FormatTools;
 import loci.formats.in.MetadataLevel;
 import loci.formats.meta.MetadataStore;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
-import loci.formats.tiff.TiffCompression;
 
 import ome.units.quantity.Time;
 import ome.units.quantity.Length;
@@ -210,6 +207,15 @@ public class TiffReader extends BaseTiffReader {
 
   private boolean checkCommentImageJ(String comment) {
     return comment != null && comment.startsWith("ImageJ=");
+  }
+  
+    /**
+     *
+     * @return
+     */
+    @Override
+  public IFDList getIFDs() {
+      return ifds;
   }
 
   private boolean checkCommentMetamorph(String comment) {

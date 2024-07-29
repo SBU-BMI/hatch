@@ -1,6 +1,7 @@
 package edu.stonybrook.bmi.hatch;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.converters.IntegerConverter;
 import com.beust.jcommander.internal.Lists;
 import java.io.File;
 import java.util.List;
@@ -23,9 +24,12 @@ public class HatchParameters {
     @Parameter(names = "-dest", description = "Destination Folder or File", required = true)
     public File dest;  
     
-    @Parameter(names = "-fp", description = "# of file processors")
-    public int fp = 1;  
+    @Parameter(names = "-fp", description = "# of file processors", converter = IntegerConverter.class)
+    public Integer fp = 1;  
 
+    @Parameter(names = {"-filter", "-f"}, description = "String that each path must contain")
+    public String filter = null;
+    
     @Parameter(names = {"-v","-verbose"})
     public boolean verbose = false;
 
@@ -37,6 +41,9 @@ public class HatchParameters {
     
     @Parameter(names = {"-validate"})
     public boolean validate = false;
+
+    @Parameter(names = {"-validateonly"})
+    public boolean validateonly = false;
     
     @Parameter(names = "-jp2", hidden = true)
     public boolean jp2 = false;
@@ -45,6 +52,5 @@ public class HatchParameters {
     public float quality = 1.0f;
     
     @Parameter(names = {"-s","-series"}, description = "specify source series separated by commas")
-    public List<String> series = Lists.newArrayList();
-    
+    public List<String> series = Lists.newArrayList();    
 }

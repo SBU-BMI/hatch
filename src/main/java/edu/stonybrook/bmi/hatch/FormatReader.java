@@ -65,8 +65,6 @@ import loci.formats.meta.MetadataRetrieve;
 import loci.formats.meta.MetadataStore;
 import loci.formats.ome.OMEXMLMetadata;
 import loci.formats.services.OMEXMLService;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
 import ome.xml.model.AffineTransform;
 import ome.xml.model.enums.AcquisitionMode;
 import ome.xml.model.enums.ArcType;

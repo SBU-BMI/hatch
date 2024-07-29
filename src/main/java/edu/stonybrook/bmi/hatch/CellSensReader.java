@@ -34,10 +34,7 @@ import loci.formats.in.BMPReader;
 import loci.formats.in.DynamicMetadataOptions;
 import loci.formats.in.MetadataOptions;
 import loci.formats.meta.MetadataStore;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
 import loci.formats.tiff.PhotoInterp;
-import loci.formats.tiff.TiffParser;
 import ome.units.UNITS;
 import ome.xml.model.primitives.Timestamp;
 

@@ -21,10 +21,10 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 3.3.0 by Wing-n-Beak";
+    public static String software = "hatch 4.0.0 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     private static final String errorlog = "error.log";
-    private static Logger LOGGER;
+    private static final Logger LOGGER;
     public static final String HELP = Hatch.software+"\n"+
         """
         usage: hatch <src> <dest>
@@ -32,7 +32,7 @@ public class Hatch {
         """;
     
     public Hatch() {
-        LOGGER = Logger.getLogger(Hatch.class.getName());
+        //LOGGER = Logger.getLogger(Hatch.class.getName());
     }
     
     static {
@@ -52,6 +52,12 @@ public class Hatch {
         try (Stream<Path> X = Files.walk(params.src.toPath())) {
             X
                 .filter(Objects::nonNull)
+                .filter(path->{
+                    if (params.filter==null) {
+                        return true;
+                    }
+                    return path.toString().contains(params.filter);
+                })
                 .filter(fff -> {
                     for (String ext1 : ext) {
                         if (fff.toFile().toString().toLowerCase().endsWith(ext1)) {
@@ -70,14 +76,14 @@ public class Hatch {
                     engine.submit(new FileProcessor(params, f, t));                  
                 });
         } catch (IOException ex) {            
-            LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src.toString(), params.dest.toString(), ex.toString()});
         }
         int cc = engine.getActiveCount()+engine.getQueue().size();
         while ((engine.getActiveCount()+engine.getQueue().size())>0) {
             int curr = engine.getActiveCount()+engine.getQueue().size();
             if (cc!=curr) {
                 cc=curr;
-                if (params.verbose) LOGGER.log(Level.INFO,"All jobs submitted...waiting for "+curr);
+                if (params.verbose) LOGGER.log(Level.INFO, "All jobs submitted...waiting for {0}", curr);
             }
         }
         LOGGER.info("Engine shutdown");
@@ -92,6 +98,10 @@ public class Hatch {
     public static void main(String[] args) {
         LOGGER.setLevel(Level.SEVERE);
         loci.common.DebugTools.setRootLevel("WARN");
+        if (args.length==0) {
+            System.out.println("please specify parameters.  Try 'hatch -help' for help! :-)");
+            System.exit(0);
+        }
         HatchParameters params = new HatchParameters();
         JCommander jc = JCommander.newBuilder().addObject(params).build();
         jc.setProgramName(Hatch.software+"\nhatch");
@@ -133,7 +143,7 @@ public class Hatch {
                                 try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString(), series)){
                                     v2t.Execute();
                                 } catch (Exception ex) {
-                                    LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+                                    LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src.toString(), params.dest.toString(), ex.toString()});
                                 }
                             }
                         } else {
@@ -143,7 +153,7 @@ public class Hatch {
                                 try (X2TIF v2t = new X2TIF(params, params.src.toString(), dest.toString(), null);) {
                                     v2t.Execute();
                                 } catch (Exception ex) {
-                                    LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+                                    LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src.toString(), params.dest.toString(), ex.toString()});
                                 }  
                             } else {
                                 params.series.forEach(s->{
@@ -151,7 +161,7 @@ public class Hatch {
                                     try (X2TIF v2t = new X2TIF(params, params.src.toString(), dest.toString(), Integer.valueOf(s));) {
                                         v2t.Execute();
                                     } catch (Exception ex) {
-                                        LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+                                        LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src.toString(), params.dest.toString(), ex.toString()});
                                     }  
                                 });
                             }
@@ -162,15 +172,15 @@ public class Hatch {
                         try (X2TIF v2t = new X2TIF(params, params.src.toString(), params.dest.toString(), null);) {
                             v2t.Execute();
                         } catch (Exception ex) {
-                            LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+                            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src.toString(), params.dest.toString(), ex.toString()});
                         } 
                     }
                 }
             } else {
-                LOGGER.severe(params.src.toString()+" does not exist!");
+                LOGGER.log(Level.SEVERE, "{0} does not exist!", params.src.toString());
             }  
         } catch (ParameterException ex) {
-            LOGGER.severe("FILE PROCESSOR ERROR --> "+params.src.toString()+" "+params.dest.toString()+" "+ex.toString());
+            LOGGER.severe(ex.getMessage());
         }
     }
 }
@@ -195,24 +205,28 @@ class FileProcessor implements Callable<String> {
                 dest.delete();
             } else {
                 if (params.retry) {
-                    if (!Validate2.file(dest.toPath())) {                    
+                    if (!Validate.file(dest.toPath())) {                    
                         dest.delete();
                     }
                 } else {
                     if (params.validate) {
-                        Validate2.file(dest.toPath());
+                        Validate.file(dest.toPath());
                     }
                     return null;
                 }
             }
         }
-        dest.getParentFile().mkdirs();
-        try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString(), null)) {
-            v2t.Execute();
-        } catch (Exception ex) {
-            LOGGER.severe("FILE PROCESSOR ERROR --> "+src+" "+dest+" "+ex.toString());
-        }        
-        Validate2.file(dest.toPath());
+        if ((!dest.exists())&&(!params.validateonly)) {
+            dest.getParentFile().mkdirs();
+            try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString(), null)) {
+                v2t.Execute();
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{src, dest, ex.toString()});
+            }        
+        }
+        if (dest.exists()&&((params.validate)||params.validateonly)) {
+            Validate.file(dest.toPath());
+        }
         return null;
     }    
 }

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.stonybrook.bmi</groupId>
   <artifactId>hatch</artifactId>
-  <version>3.3.0</version>
+  <version>4.0.0</version>
   <build>
     <resources>
       <resource>
@@ -45,7 +45,7 @@
           </plugin>
           <plugin>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.5.1</version>
+            <version>3.5.2</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -87,7 +87,7 @@
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.0</version>
+            <version>0.10.1</version>
             <extensions>true</extensions>
             <executions>
               <execution>
@@ -127,12 +127,16 @@
       <name>OME Artifactory</name>
       <url>https://artifacts.openmicroscopy.org/artifactory/maven/</url>
     </repository>
+    <repository>
+      <id>halcyon</id>
+      <url>https://cursus.bmi.stonybrookmedicine.edu/releases</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
       <groupId>org.apache.jena</groupId>
       <artifactId>apache-jena-libs</artifactId>
-      <version>5.0.0-rc1</version>
+      <version>5.0.0</version>
       <type>pom</type>
       <scope>compile</scope>
     </dependency>
@@ -142,6 +146,6 @@
     <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
     <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <ver.bioformats>7.0.0</ver.bioformats>
+    <ver.bioformats>7.3.0</ver.bioformats>
   </properties>
 </project>

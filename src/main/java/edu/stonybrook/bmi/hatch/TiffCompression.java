@@ -22,7 +22,6 @@ import loci.formats.codec.NikonCodec;
 import loci.formats.codec.PackbitsCodec;
 import loci.formats.codec.PassthroughCodec;
 import loci.formats.codec.ZlibCodec;
-import loci.formats.tiff.IFD;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

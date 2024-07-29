@@ -46,8 +46,6 @@ import loci.formats.MetadataTools;
 import loci.formats.codec.JPEG2000CodecOptions;
 import loci.formats.in.JPEG2000MetadataParser;
 import loci.formats.meta.MetadataStore;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
 import loci.formats.tiff.PhotoInterp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,6 +126,7 @@ public class MinimalTiffReader extends SubResolutionFormatReader {
   // -- MinimalTiffReader API methods --
 
   /** Gets the list of IFDs associated with the current TIFF's image planes. */
+  @Override
   public IFDList getIFDs() {
     return ifds;
   }
@@ -287,7 +286,7 @@ public class MinimalTiffReader extends SubResolutionFormatReader {
       ifd = ifds.get(no);
     }
     try {
-        if ((firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000 || firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000_LOSSY) && resolutionLevels != null) {
+        if ((firstIFD.getCompression() == TiffCompression.JPEG_2000 || firstIFD.getCompression() == TiffCompression.JPEG_2000_LOSSY) && resolutionLevels != null) {
             if (getCoreIndex() > 0) {
                 ifd = subResolutionIFDs.get(no).get(getCoreIndex() - 1);
             }
@@ -336,7 +335,7 @@ public class MinimalTiffReader extends SubResolutionFormatReader {
       ifd = ifds.get(no);
     }
     try {
-        if ((firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000 || firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000_LOSSY) && resolutionLevels != null) {
+        if ((firstIFD.getCompression() == TiffCompression.JPEG_2000 || firstIFD.getCompression() == TiffCompression.JPEG_2000_LOSSY) && resolutionLevels != null) {
             if (getCoreIndex() > 0) {
                 ifd = subResolutionIFDs.get(no).get(getCoreIndex() - 1);
             }
@@ -378,8 +377,8 @@ public class MinimalTiffReader extends SubResolutionFormatReader {
     } else {
       ifd = ifds.get(no);
     }
-    if ((firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000
-        || firstIFD.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000_LOSSY)
+    if ((firstIFD.getCompression() == TiffCompression.JPEG_2000
+        || firstIFD.getCompression() == TiffCompression.JPEG_2000_LOSSY)
         && resolutionLevels != null) {
       if (getCoreIndex() > 0) {
         ifd = subResolutionIFDs.get(no).get(getCoreIndex() - 1);
@@ -607,8 +606,8 @@ public class MinimalTiffReader extends SubResolutionFormatReader {
 
     tiffParser.setAssumeEqualStrips(equalStrips);
     for (IFD ifd : ifds) {
-      if ((ifd.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000
-          || ifd.getCompression() == loci.formats.tiff.TiffCompression.JPEG_2000_LOSSY) &&
+      if ((ifd.getCompression() == TiffCompression.JPEG_2000
+          || ifd.getCompression() == TiffCompression.JPEG_2000_LOSSY) &&
           ifd.getImageWidth() == ifds.get(0).getImageWidth()) {
         LOGGER.debug("Found IFD with JPEG 2000 compression");
         long[] stripOffsets = ifd.getStripOffsets();

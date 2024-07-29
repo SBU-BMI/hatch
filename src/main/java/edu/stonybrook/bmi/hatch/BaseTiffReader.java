@@ -43,8 +43,6 @@ import loci.formats.FormatTools;
 import loci.formats.MetadataTools;
 import loci.formats.in.MetadataLevel;
 import loci.formats.meta.MetadataStore;
-import loci.formats.tiff.IFD;
-import loci.formats.tiff.IFDList;
 import loci.formats.tiff.PhotoInterp;
 import loci.formats.tiff.TiffRational;
 import ome.units.UNITS;
@@ -95,11 +93,6 @@ public abstract class BaseTiffReader extends MinimalTiffReader {
     initStandardMetadata();
     initMetadataStore();
   }
-  
-  @Override
-  public IFDList getIFDs() {
-      return ifds;
-  }
 
   /**
    * Parses standard metadata.
@@ -136,7 +129,7 @@ public abstract class BaseTiffReader extends MinimalTiffReader {
       }
     }
 
-    loci.formats.tiff.TiffCompression comp = firstIFD.getCompression();
+    TiffCompression comp = firstIFD.getCompression();
     put("Compression", comp.getCodecName());
 
     PhotoInterp photo = firstIFD.getPhotometricInterpretation();

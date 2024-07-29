@@ -1,14 +1,5 @@
 [
 {
-  "name":"[[I"
-},
-{
-  "name":"[[J"
-},
-{
-  "name":"[[Lloci.formats.tiff.TiffRational;"
-},
-{
   "name":"boolean",
   "allDeclaredFields":true
 },
@@ -23,6 +14,11 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.beust.jcommander.converters.IntegerConverter",
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }]
+},
+{
   "name":"com.beust.jcommander.validators.NoValidator",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -31,13 +27,32 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
+  "name":"com.sun.xml.internal.stream.XMLInputFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"edu.stonybrook.bmi.hatch.HatchParameters",
   "allDeclaredFields":true,
   "queryAllDeclaredMethods":true
 },
 {
+    "name" : "java.util.logging.FileHandler",
+    "methods" : [{ "name" : "<init>", "parameterTypes" : [] }]
+},
+{
   "name":"java.io.File",
   "allDeclaredFields":true
+},
+{
+  "name":"java.lang.Integer",
+  "allDeclaredFields":true
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
 },
 {
   "name":"loci.common.Log4jTools",
@@ -83,12 +98,6 @@
   "name":"loci.formats.services.JPEGXRServiceImpl"
 },
 {
-  "name":"loci.formats.services.LuraWaveService"
-},
-{
-  "name":"loci.formats.services.LuraWaveServiceImpl"
-},
-{
   "name":"loci.formats.services.MDBService"
 },
 {
@@ -120,21 +129,53 @@
   "name":"loci.formats.services.POIServiceImpl"
 },
 {
-  "name":"loci.formats.services.WlzService"
-},
-{
-  "name":"loci.formats.services.WlzServiceImpl"
-},
-{
   "name":"ome.codecs.services.JAIIIOService"
 },
 {
   "name":"ome.codecs.services.JAIIIOServiceImpl"
 },
 {
-  "name":"ome.codecs.services.LuraWaveService"
+  "name":"org.apache.jena.rdfpatch.system.InitPatch"
 },
 {
-  "name":"ome.codecs.services.LuraWaveServiceImpl"
+  "name":"org.apache.jena.rdfs.sys.InitRDFS"
+},
+{
+  "name":"org.apache.jena.riot.system.InitRIOT"
+},
+{
+  "name":"org.apache.jena.shacl.sys.InitShacl"
+},
+{
+  "name":"org.apache.jena.shex.sys.InitShex"
+},
+{
+  "name":"org.apache.jena.sparql.system.InitARQ"
+},
+{
+  "name":"org.apache.jena.sys.InitJenaCore"
+},
+{
+  "name":"org.apache.jena.tdb1.sys.InitTDB"
+},
+{
+  "name":"org.apache.jena.tdb2.sys.InitTDB2"
+},
+{
+  "name":"org.apache.log4j.Level"
+},
+{
+  "name":"org.apache.xerces.jaxp.SAXParserFactoryImpl"
+},
+{
+  "name":"org.slf4j.simple.SimpleServiceProvider"
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]
