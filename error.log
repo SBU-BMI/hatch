@@ -1,2 +1,0 @@
-2024-05-15 12:34:25 SEVERE edu.stonybrook.bmi.hatch.Validate.file: D:\bad\dest\Image_01_M200_40X_A36.tif ==> index >= numImages (0 >= 0) 
-2024-05-15 12:34:25 SEVERE edu.stonybrook.bmi.hatch.Validate.file: D:\bad\dest\ugh.tif ==> Invalid TIFF byte order mark 'sd', expected: 'II' or 'MM' 
