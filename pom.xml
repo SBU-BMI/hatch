@@ -3,14 +3,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.stonybrook.bmi</groupId>
 	<artifactId>hatch</artifactId>
-	<version>4.0.1</version>
+	<version>4.1.0</version>
 	<packaging>jar</packaging>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.target>21</maven.compiler.target>
 		<ver.bioformats>7.3.1</ver.bioformats>
-                <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
+                <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
 	</properties>
 	<dependencies>
             <dependency>
@@ -28,7 +28,7 @@
             <dependency>
                 <groupId>org.jcommander</groupId>
                 <artifactId>jcommander</artifactId>
-                <version>1.83</version>
+                <version>2.0</version>
             </dependency>
             <dependency>
                 <groupId>com.twelvemonkeys.imageio</groupId>
@@ -38,7 +38,7 @@
             <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>apache-jena-libs</artifactId>
-                <version>5.1.0</version>
+                <version>5.2.0</version>
                 <type>pom</type>
             </dependency>
             <dependency>
@@ -51,6 +51,11 @@
                 <artifactId>halcyon-core</artifactId>
                 <version>1.1.0</version>
             </dependency>-->
+            <dependency>
+                <groupId>me.tongfei</groupId>
+                <artifactId>progressbar</artifactId>
+                <version>0.10.1</version>
+            </dependency> 
 	</dependencies>
 	<build>
               <resources>
@@ -88,7 +93,7 @@
 	</repositories>
         <profiles>
             <profile>
-                <id>hatchjar</id>
+                <id>jar</id>
                 <activation>
                     <activeByDefault>true</activeByDefault>
                 </activation>
@@ -98,7 +103,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-enforcer-plugin</artifactId>
-                            <version>3.4.1</version>
+                            <version>3.5.0</version>
                             <executions>
                                 <execution>
                                     <id>enforce</id>
@@ -116,7 +121,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-shade-plugin</artifactId>
-                            <version>3.5.2</version>
+                            <version>3.6.0</version>
                             <configuration>
                                 <shadedArtifactAttached>false</shadedArtifactAttached>
                                 <transformers>
@@ -152,13 +157,24 @@
                 </build>
             </profile>
             <profile>
-                <id>hatch</id>
+                <id>native</id>
                 <build>
                     <plugins>
                         <plugin>
+                            <groupId>org.apache.maven.plugins</groupId>
+                            <artifactId>maven-compiler-plugin</artifactId>
+                            <version>3.13.0</version>
+                            <configuration>
+                                <compilerArgs>
+                                    <arg>--add-reads</arg>
+                                    <arg>edu.stonybrook.bmi.hatch=ALL-UNNAMED</arg>
+                                </compilerArgs>
+                            </configuration>
+                        </plugin>
+                        <plugin>
                             <groupId>org.graalvm.buildtools</groupId>
                             <artifactId>native-maven-plugin</artifactId>
-                            <version>0.10.1</version>
+                            <version>0.10.3</version>
                             <extensions>true</extensions>
                             <executions>
                                 <execution>
@@ -180,6 +196,10 @@
                                     <buildArg>-H:ConfigurationFileDirectories=config</buildArg>
                                     <buildArg>--enable-url-protocols=https</buildArg>
                                     <buildArg>-H:+AddAllCharsets</buildArg>
+                                    <buildArg>--gc=G1</buildArg>
+                                    <buildArg>-march=native</buildArg>
+                                    <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                                    <buildArg>-H:IncludeResources="logging.properties"</buildArg>
                                 </buildArgs>
                             </configuration>
                         </plugin>

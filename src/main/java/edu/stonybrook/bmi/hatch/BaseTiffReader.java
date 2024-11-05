@@ -521,7 +521,7 @@ public abstract class BaseTiffReader extends MinimalTiffReader {
    */
   protected String getImageCreationDate() {
     Object o = ifds.get(0).getIFDValue(IFD.DATE_TIME);
-    if (o instanceof String) return (String) o;
+    if (o instanceof String string) return string;
     if (o instanceof String[] && ((String[]) o).length > 0) return ((String[]) o)[0];
     return null;
   }
@@ -588,8 +588,7 @@ public abstract class BaseTiffReader extends MinimalTiffReader {
   }
 
   protected void putDouble(String key, IFD ifd, int tag) {
-    if (ifd.getIFDValue(tag) instanceof Number) {
-      Number number = (Number) ifd.getIFDValue(tag);
+    if (ifd.getIFDValue(tag) instanceof Number number) {
       if (number != null) {
         put(key, number.doubleValue());
       }

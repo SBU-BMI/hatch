@@ -35,6 +35,7 @@ import ome.xml.model.primitives.PositiveInteger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
+import java.util.logging.LogManager;
 
 /**
  *
@@ -60,12 +61,20 @@ public class X2TIF implements AutoCloseable {
     private HatchWriter writer;
     private IMetadata meta;
     private byte compression;
-    private static Logger LOGGER;
+    private static final Logger LOGGER;
     private XMP xmp = null;
     private String xcompression = null;
     
+    static {
+         try {
+             LogManager.getLogManager().readConfiguration(X2TIF.class.getResourceAsStream("/logging.properties"));
+         } catch (IOException | SecurityException | ExceptionInInitializerError ex) {
+             Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, "Failed to read logging.properties file", ex);
+         }
+         LOGGER = Logger.getLogger(X2TIF.class.getName());
+     }
+    
     public X2TIF(HatchParameters params, String src, String dest, Integer series) {
-        LOGGER = Logger.getLogger(X2TIF.class.getName());
         time = new StopWatch();
         inputFile = src;
         this.params = params;
@@ -78,17 +87,11 @@ public class X2TIF implements AutoCloseable {
             IMetadata omexml = service.createOMEXMLMetadata();
             String end = inputFile.substring(inputFile.length()-4).toLowerCase();
             switch (end) {
-                case ".tif":
-                    reader = new TiffReader();
-                    break;
-                case ".svs":
-                    reader = new SVSReader();
-                    break;
-                case ".vsi":
-                    reader = new CellSensReader();
-                    break;
-                default:
-                    break;
+                case ".tif" -> reader = new TiffReader();
+                case ".svs" -> reader = new SVSReader();
+                case ".vsi" -> reader = new CellSensReader();
+                default -> {
+                }
             }            
             reader.setMetadataStore(omexml);
             reader.setId(inputFile);
@@ -108,13 +111,13 @@ public class X2TIF implements AutoCloseable {
                 maximage = series;
             }
             if ((series!=null)&&((series<0)||(series>reader.getSeriesCount()))) {
-                LOGGER.log(Level.INFO, "Series doesn''t exist : {0} --> {1}", new Object[]{src, series});
+                LOGGER.log(Level.INFO, "Series doesn''t exist : {0}: {1}", new Object[]{src, series});
                 System.exit(0);
             }
             try {
                writer = new HatchWriter(dest);
             } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
             }
             reader.setSeries(maximage);
             tileSizeX = reader.getOptimalTileWidth();
@@ -299,9 +302,9 @@ public class X2TIF implements AutoCloseable {
                 fos.flush();
             }
         } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
         }
     }
     
@@ -323,14 +326,14 @@ public class X2TIF implements AutoCloseable {
             try {
                 jpgWriter.write(null, outputImage, param);
             } catch (IOException ex) {
-               LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+               LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
             }
             jpgWriter.dispose();
             Files.write(f.toPath(), baos.toByteArray());
         } catch (FileNotFoundException ex) {
-            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
         } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
         }
     }
     
@@ -382,20 +385,18 @@ public class X2TIF implements AutoCloseable {
             xcompression = "UNKNOWN";
         }
         switch (xcompression) {
-            //case "JPEG-2000":
-//                compression = 2;
-                //ifd.put(IFD.COMPRESSION, 34712); 
-  //              ifd.put(IFD.COMPRESSION, 33005);
-                //ifd.put(IFD.COMPRESSION, 33003);
-    //            break;
-            case "JPEG":
-            case "UNKNOWN":
+            case "JPEG", "UNKNOWN" -> {
                 compression = 0;
                 ifd.put(IFD.COMPRESSION, 7);
-                break;
-            default:
-                throw new Error("Should never get here");
+            }
+            default -> throw new Error("Should never get here");
         }
+        //case "JPEG-2000":
+//                compression = 2;
+        //ifd.put(IFD.COMPRESSION, 34712);
+        //              ifd.put(IFD.COMPRESSION, 33005);
+        //ifd.put(IFD.COMPRESSION, 33003);
+        //            break;
         ifd.put(IFD.BITS_PER_SAMPLE, new int[] {8, 8, 8});
         ifd.put(IFD.SAMPLES_PER_PIXEL, 3);
         ifd.put(IFD.PLANAR_CONFIGURATION, 1);
@@ -447,42 +448,35 @@ public class X2TIF implements AutoCloseable {
                 //int effTileSizeX = (tileX + tileSizeX) < width ? tileSizeX : width - tileX;
                 //int effTileSizeY = (tileY + tileSizeY) < height ? tileSizeY : height - tileY;
                 byte[] raw;
-                switch (method) {
-                    case 1:
-                    case 2:
-                    case 3:
-                        raw = reader.getRawBytes(rawbuffer, 0, y, x);
-                        break;
-                    default:
-                       raw = reader.openCompressedBytes(0, x, y); 
-                }
+                raw = switch (method) {
+                    case 1, 2, 3 -> reader.getRawBytes(rawbuffer, 0, y, x);
+                    default -> reader.openCompressedBytes(0, x, y);
+                };
                 //byte[] raw = reader.getRawBytes(rawbuffer, 0, y, x);
 
                 writer.writeIFDStrips(ifd, raw, false, x*tileSizeX, y*tileSizeY);
                 //Dump2File3(raw, x, y);
                 switch (compression) {
-                    case 0:
-                        //BufferedImage bi = ImageIO.read(new ByteArrayInputStream(raw));
+                    case 0 -> //BufferedImage bi = ImageIO.read(new ByteArrayInputStream(raw));
                         //bi = bi.getSubimage(0, 0, effTileSizeX, effTileSizeY);
                         //pyramid.put(bi, x, y);
                         pyramid.put(raw, x, y);
-                        break;
-                        /*
-                    case 2:
-                        try {
-                            byte[] buff = codec.decompress(raw);
-                            BufferedImage bix = byte2bi(buff);
-                            //DumpBI2File3(bix,x,y);
-                            bix = bix.getSubimage(0, 0, effTileSizeX, effTileSizeY);
-                            pyramid.put(bix, x, y);
-                        } catch (CodecException ex) {
-                            Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        break;*/
-                    default:
-                        throw new Error("Unknown Compression!");
-                }                                  
-            }
+
+                    default -> throw new Error("Unknown Compression!");
+                }
+                /*
+                case 2:
+                try {
+                byte[] buff = codec.decompress(raw);
+                BufferedImage bix = byte2bi(buff);
+                //DumpBI2File3(bix,x,y);
+                bix = bix.getSubimage(0, 0, effTileSizeX, effTileSizeY);
+                pyramid.put(bix, x, y);
+                } catch (CodecException ex) {
+                Logger.getLogger(X2TIF.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;*/
+                            }
         }
         if (params.verbose) {
             time.Cumulative();
@@ -537,7 +531,7 @@ public class X2TIF implements AutoCloseable {
             bb = AWTImageTools.makeImage(buf, reader.isInterleaved(), meta, 0);
             return bb;
         } catch (FormatException ex) {
-            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
+            LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{params.src, params.dest, ex.toString()});
         } 
         return bb;
     }

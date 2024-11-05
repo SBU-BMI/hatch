@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * @author erich
  */
 public class Hatch {    
-    public static String software = "hatch 4.0.0 by Wing-n-Beak";
+    public static String software = "hatch 4.1.0 by Wing-n-Beak";
     private static final String[] ext = new String[] {".vsi", ".svs", ".tif"};
     private static final String errorlog = "error.log";
     private static final Logger LOGGER;
@@ -31,10 +31,6 @@ public class Hatch {
         -v : verbose
         """;
     
-    public Hatch() {
-        //LOGGER = Logger.getLogger(Hatch.class.getName());
-    }
-    
     static {
          try {
              LogManager.getLogManager().readConfiguration(Hatch.class.getResourceAsStream("/logging.properties"));
@@ -43,6 +39,8 @@ public class Hatch {
          }
          LOGGER = Logger.getLogger(Hatch.class.getName());
      }
+
+    public Hatch() {}
     
     private static void Traverse(HatchParameters params) {
         Path s = params.src.toPath();
@@ -189,13 +187,22 @@ class FileProcessor implements Callable<String> {
     private final HatchParameters params;
     private final File src;
     private final File dest;
-    private static Logger LOGGER;
+    private static final Logger LOGGER;
 
+    static {
+         try {
+             LogManager.getLogManager().readConfiguration(FileProcessor.class.getResourceAsStream("/logging.properties"));
+         } catch (IOException | SecurityException | ExceptionInInitializerError ex) {
+             Logger.getLogger(FileProcessor.class.getName()).log(Level.SEVERE, "Failed to read logging.properties file", ex);
+         }
+         LOGGER = Logger.getLogger(FileProcessor.class.getName());
+     }
+    
     public FileProcessor(HatchParameters params, Path src, Path dest) {
         this.params = params;
         this.src = src.toFile();
         this.dest = dest.toFile();
-        LOGGER = Logger.getLogger(Hatch.class.getName());
+        //LOGGER = Logger.getLogger(Hatch.class.getName());
     }
     
     @Override
@@ -221,7 +228,7 @@ class FileProcessor implements Callable<String> {
             try (X2TIF v2t = new X2TIF(params, src.toString(), dest.toString(), null)) {
                 v2t.Execute();
             } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR --> {0} {1} {2}", new Object[]{src, dest, ex.toString()});
+                LOGGER.log(Level.SEVERE, "FILE PROCESSOR ERROR: {0} {1} {2}", new Object[]{src, dest, ex.toString()});
             }        
         }
         if (dest.exists()&&((params.validate)||params.validateonly)) {

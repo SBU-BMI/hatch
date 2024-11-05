@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.stonybrook.bmi</groupId>
   <artifactId>hatch</artifactId>
-  <version>4.0.1</version>
+  <version>4.0.2</version>
   <build>
     <resources>
       <resource>
@@ -22,13 +22,13 @@
   </build>
   <profiles>
     <profile>
-      <id>hatchjar</id>
+      <id>jar</id>
       <build>
         <finalName>hatch-${project.version}</finalName>
         <plugins>
           <plugin>
             <artifactId>maven-enforcer-plugin</artifactId>
-            <version>3.4.1</version>
+            <version>3.5.0</version>
             <executions>
               <execution>
                 <id>enforce</id>
@@ -45,7 +45,7 @@
           </plugin>
           <plugin>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.5.2</version>
+            <version>3.6.0</version>
             <executions>
               <execution>
                 <phase>package</phase>
@@ -81,13 +81,23 @@
       </build>
     </profile>
     <profile>
-      <id>hatch</id>
+      <id>native</id>
       <build>
         <plugins>
           <plugin>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.13.0</version>
+            <configuration>
+              <compilerArgs>
+                <arg>--add-reads</arg>
+                <arg>edu.stonybrook.bmi.hatch=ALL-UNNAMED</arg>
+              </compilerArgs>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
-            <version>0.10.1</version>
+            <version>0.10.3</version>
             <extensions>true</extensions>
             <executions>
               <execution>
@@ -109,6 +119,8 @@
                 <buildArg>-H:ConfigurationFileDirectories=config</buildArg>
                 <buildArg>--enable-url-protocols=https</buildArg>
                 <buildArg>-H:+AddAllCharsets</buildArg>
+                <buildArg>--gc=G1</buildArg>
+                <buildArg>-H:IncludeResources="logging.properties"</buildArg>
               </buildArgs>
             </configuration>
           </plugin>
@@ -143,7 +155,7 @@
   </dependencies>
   <properties>
     <maven.compiler.target>21</maven.compiler.target>
-    <twelvemonkeys.version>3.10.1</twelvemonkeys.version>
+    <twelvemonkeys.version>3.12.0</twelvemonkeys.version>
     <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <ver.bioformats>7.3.1</ver.bioformats>
