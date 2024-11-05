@@ -14,11 +14,11 @@ Build with:
 
 Jar version
 ```
-mvn -Phatchjar clean package
+mvn -Pjar clean package
 ```
 Native-image version (requires fully configured Graalvm native-image environment)
 ```
-mvn -Phatch clean package
+mvn -Pnative clean package
 ```
 
 Usage:
